@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-25
-last_updated: 2026-03-25  # 2.3 → done
+last_updated: 2026-03-25  # 2.4 → done
 project: playlist-cutter-bmad
 project_key: NOKEY
 tracking_system: file-system
@@ -55,7 +55,7 @@ development_status:
   2-1-playlisten-laden-und-zwei-spalten-layout: done
   2-2-playlist-auswahl-mit-farbkodierung-und-animationen: done
   2-3-toolbar-mit-playlist-name-live-summary-und-erstellen-button: done
-  2-4-confirmation-dialog-vor-der-erstellung: backlog
+  2-4-confirmation-dialog-vor-der-erstellung: done
   epic-2-retrospective: optional
 
   # Epic 3: Diff-Berechnung & Playlist-Erstellung

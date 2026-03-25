@@ -113,6 +113,20 @@ function AppContent() {
           <PlaylistColumns />
         </>
       )
+    case 'creating':
+      return (
+        <>
+          <AppHeader />
+          <main
+            aria-live="polite"
+            className="max-w-6xl mx-auto p-6 md:p-8 flex flex-col items-center justify-center min-h-[60vh] gap-4"
+          >
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-600 border-t-transparent" aria-hidden="true" />
+            <p className="text-lg font-semibold text-gray-900">{state.playlistName}</p>
+            <p className="text-sm text-gray-500">Erstelle Playlist…</p>
+          </main>
+        </>
+      )
     case 'error':
       return (
         <>

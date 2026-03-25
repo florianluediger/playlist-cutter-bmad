@@ -4,6 +4,10 @@ import { AppContext } from '@/context/AppContext'
 import { PlaylistColumns } from '@/components/PlaylistColumns'
 import type { AppState } from '@/types/index'
 
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn().mockReturnValue(true),
+}))
+
 const basePlaylists = [
   { id: 'p1', name: 'Playlist Alpha', trackCount: 10 },
   { id: 'p2', name: 'Playlist Beta', trackCount: 20 },
