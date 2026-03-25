@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlist Cutter — Design Directions v4 (interaktiv)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky: #0284C7;
+      --sky-hover: #0369A1;
+      --sky-light: #E0F2FE;
+      --sky-mid: #BAE6FD;
+      --sky-dark: #075985;
+      --rose: #C9445A;
+      --rose-light: #FEF2F4;
+      --rose-mid: #FECDD6;
+      --rose-dark: #9B2C3F;
+    }
+
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0d0d10; color: #fff; }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(13,13,16,0.97); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 0 24px; display: flex; align-items: center; gap: 8px;
+      height: 50px; overflow-x: auto;
+    }
+    .nav-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); white-space: nowrap; margin-right: 12px; flex-shrink: 0; }
+    .nav-btn {
+      padding: 5px 13px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s;
+    }
+    .nav-btn:hover { color: #fff; border-color: rgba(255,255,255,0.22); }
+    .nav-btn.active { color: #fff; background: rgba(2,132,199,0.2); border-color: rgba(2,132,199,0.5); }
+
+    .page { padding-top: 50px; }
+    .dir { display: none; }
+    .dir.show { display: block; }
+
+    .meta-bar {
+      background: rgba(255,255,255,0.025); border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 9px 28px; display: flex; align-items: center; gap: 14px;
+      font-size: 12px; color: rgba(255,255,255,0.3);
+    }
+    .meta-tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+
+    /* ── SHARED CHROME ── */
+    .mockup { background: #F8F8F9; color: #111827; min-height: calc(100vh - 92px); }
+    .app-header {
+      background: #fff; border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+    }
+    .app-logo { font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+    .logo-dot { color: var(--sky); }
+    .app-user { display: flex; align-items: center; gap: 7px; color: #9CA3AF; }
+    .user-pip {
+      border-radius: 50%; background: var(--sky);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: #fff;
+    }
+    .logout { color: #C4C9D4; cursor: pointer; transition: color 0.1s; }
+    .logout:hover { color: #9CA3AF; }
+
+    .toolbar {
+      background: #fff; border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center; gap: 10px; padding: 10px 32px;
+    }
+    .toolbar-label { color: #9CA3AF; white-space: nowrap; }
+    .toolbar-input {
+      flex: 1; padding: 0 11px; border: 1.5px solid #E5E7EB; border-radius: 7px;
+      font-family: inherit; color: #111827; background: #F9FAFB; outline: none;
+      transition: border-color 0.15s;
+    }
+    .toolbar-input:focus { border-color: var(--sky); background: #fff; }
+    .summary { color: #B0B7C3; white-space: nowrap; }
+
+    .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px 32px; }
+    .tw { background: #fff; border: 1.5px solid #E9EBF0; border-radius: 10px; overflow: hidden; }
+
+    /* Column header */
+    .col-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .col-hd-left { display: flex; align-items: center; gap: 7px; }
+    .col-icon { display: flex; align-items: center; justify-content: center; border-radius: 6px; flex-shrink: 0; }
+    .col-title-s { font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--sky); }
+    .col-title-e { font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--rose); }
+
+    /* Badge */
+    .badge {
+      font-weight: 600; border-radius: 20px; transition: transform 0.15s;
+    }
+    .badge-s { background: var(--sky-light); color: var(--sky-dark); }
+    .badge-e { background: var(--rose-light); color: var(--rose-dark); }
+    .badge-bounce { animation: badgeBounce 0.25s ease; }
+    @keyframes badgeBounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+
+    /* Rows */
+    .row {
+      display: flex; align-items: center;
+      border-bottom: 1px solid #F9FAFB; cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, border-left-color 0.12s;
+    }
+    .row:last-child { border-bottom: none; }
+    .row:hover { background: #F5F5F6; }
+    .row.s-on { background: var(--sky-light); border-left-color: var(--sky); }
+    .row.e-on { background: var(--rose-light); border-left-color: var(--rose); }
+
+    /* Checkbox */
+    .cb {
+      border: 1.5px solid #D1D5DB; border-radius: 4px;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .cb svg { opacity: 0; transform: scale(0.5); transition: all 0.15s; }
+    .cb.s-on { background: var(--sky); border-color: var(--sky); }
+    .cb.e-on { background: var(--rose); border-color: var(--rose); }
+    .cb.s-on svg, .cb.e-on svg { opacity: 1; transform: scale(1); }
+    .cb.pop { animation: cbPop 0.2s ease; }
+    @keyframes cbPop { 0%{transform:scale(1)} 40%{transform:scale(0.82)} 70%{transform:scale(1.12)} 100%{transform:scale(1)} }
+
+    .pl-name { flex: 1; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .pl-name.bold { font-weight: 700; }
+    .pl-tracks { color: #C8CDD6; white-space: nowrap; }
+
+    /* ── VARIANT-SPECIFIC SIZES ── */
+
+    /* V1: Medium — 14px names */
+    .v1 .app-header { height: 52px; }
+    .v1 .app-logo { font-size: 16px; }
+    .v1 .app-user { font-size: 12px; }
+    .v1 .user-pip { width: 24px; height: 24px; font-size: 9px; }
+    .v1 .toolbar { height: 52px; }
+    .v1 .toolbar-label { font-size: 12px; }
+    .v1 .toolbar-input { height: 36px; font-size: 13px; }
+    .v1 .summary { font-size: 12px; }
+    .v1 .col-hd { padding: 10px 16px; }
+    .v1 .col-icon { width: 22px; height: 22px; }
+    .v1 .col-icon svg { width: 13px; height: 13px; }
+    .v1 .col-title-s, .v1 .col-title-e { font-size: 11px; }
+    .v1 .badge { font-size: 11px; padding: 2px 8px; }
+    .v1 .row { padding: 9px 16px 9px 13px; gap: 10px; }
+    .v1 .cb { width: 16px; height: 16px; }
+    .v1 .cb svg { width: 9px; height: 9px; }
+    .v1 .pl-name { font-size: 14px; }
+    .v1 .pl-tracks { font-size: 12px; }
+    .v1 .btn-create { height: 36px; padding: 0 18px; font-size: 13px; border-radius: 7px; }
+
+    /* V2: Large — 15px names, mehr Zeilenhöhe */
+    .v2 .app-header { height: 56px; }
+    .v2 .app-logo { font-size: 17px; }
+    .v2 .app-user { font-size: 13px; }
+    .v2 .user-pip { width: 26px; height: 26px; font-size: 10px; }
+    .v2 .toolbar { height: 56px; }
+    .v2 .toolbar-label { font-size: 13px; }
+    .v2 .toolbar-input { height: 38px; font-size: 14px; }
+    .v2 .summary { font-size: 13px; }
+    .v2 .col-hd { padding: 12px 18px; }
+    .v2 .col-icon { width: 26px; height: 26px; }
+    .v2 .col-icon svg { width: 15px; height: 15px; }
+    .v2 .col-title-s, .v2 .col-title-e { font-size: 12px; }
+    .v2 .badge { font-size: 12px; padding: 3px 10px; }
+    .v2 .row { padding: 11px 18px 11px 15px; gap: 11px; }
+    .v2 .cb { width: 18px; height: 18px; }
+    .v2 .cb svg { width: 10px; height: 10px; }
+    .v2 .pl-name { font-size: 15px; }
+    .v2 .pl-tracks { font-size: 12px; }
+    .v2 .btn-create { height: 38px; padding: 0 20px; font-size: 14px; border-radius: 8px; }
+
+    /* V3: XL — 16px names, viel Luft */
+    .v3 .app-header { height: 60px; }
+    .v3 .app-logo { font-size: 18px; }
+    .v3 .app-user { font-size: 13px; }
+    .v3 .user-pip { width: 28px; height: 28px; font-size: 10px; }
+    .v3 .toolbar { height: 60px; }
+    .v3 .toolbar-label { font-size: 13px; }
+    .v3 .toolbar-input { height: 40px; font-size: 15px; }
+    .v3 .summary { font-size: 13px; }
+    .v3 .col-hd { padding: 14px 20px; }
+    .v3 .col-icon { width: 30px; height: 30px; }
+    .v3 .col-icon svg { width: 16px; height: 16px; }
+    .v3 .col-title-s, .v3 .col-title-e { font-size: 12px; }
+    .v3 .badge { font-size: 12px; padding: 3px 10px; }
+    .v3 .row { padding: 13px 20px 13px 17px; gap: 12px; }
+    .v3 .cb { width: 18px; height: 18px; }
+    .v3 .cb svg { width: 10px; height: 10px; }
+    .v3 .pl-name { font-size: 16px; }
+    .v3 .pl-tracks { font-size: 13px; }
+    .v3 .btn-create { height: 40px; padding: 0 22px; font-size: 14px; border-radius: 8px; }
+
+    /* Button */
+    .btn-create {
+      border: none; background: var(--sky); color: #fff;
+      font-family: inherit; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 7px; white-space: nowrap; flex-shrink: 0;
+      transition: background 0.12s, transform 0.1s, box-shadow 0.12s;
+    }
+    .btn-create:hover { background: var(--sky-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(2,132,199,0.25); }
+    .btn-create:active { transform: translateY(0); }
+    .btn-create svg { flex-shrink: 0; }
+
+    /* Ripple */
+    .ripple-host { position: relative; overflow: hidden; }
+    .ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transform: scale(0); animation: rippleAnim 0.45s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+    /* Icon styles for source/exclude columns */
+    .icon-s { background: var(--sky-light); color: var(--sky); }
+    .icon-e { background: var(--rose-light); color: var(--rose); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <span class="nav-title">Equal Split · Font-Varianten (klickbar!)</span>
+    <button class="nav-btn active" onclick="show('v1')">A · Medium (14px)</button>
+    <button class="nav-btn" onclick="show('v2')">B · Large (15px)</button>
+    <button class="nav-btn" onclick="show('v3')">C · XL (16px)</button>
+  </nav>
+
+  <div class="page">
+
+    <!-- ════════════ VARIANT A — Medium 14px ════════════ -->
+    <div id="v1" class="dir show">
+      <div class="meta-bar">
+        <span class="meta-tag" style="background:#E0F2FE;color:#075985;">A · Medium — 14px</span>
+        Playlist-Name 14px · Zeilenhöhe ~34px · Icons in Column-Header · Checkbox-Animation · Button-Ripple
+      </div>
+      <div class="mockup v1">
+        <div class="app-header">
+          <div class="app-logo">Playlist<span class="logo-dot">·</span>Cutter</div>
+          <div class="app-user">
+            <div class="user-pip">FL</div>
+            <span>Flo Ludiger</span>
+            <span style="color:#E5E7EB">·</span>
+            <span class="logout" style="display:flex;align-items:center;gap:4px;">
+              <!-- logout icon -->
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Abmelden
+            </span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Neue Playlist:</span>
+          <input class="toolbar-input" id="v1-name" value="Fresh Mix — ohne Best of 2023" placeholder="Playlist-Name…">
+          <span class="summary" id="v1-summary">~121 Tracks · 2 Quellen · 1 Ausschluss</span>
+          <button class="btn-create ripple-host" onclick="ripple(event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Erstellen
+          </button>
+        </div>
+        <div class="body-grid" id="v1-grid"></div>
+      </div>
+    </div>
+
+    <!-- ════════════ VARIANT B — Large 15px ════════════ -->
+    <div id="v2" class="dir">
+      <div class="meta-bar">
+        <span class="meta-tag" style="background:#E0F2FE;color:#075985;">B · Large — 15px</span>
+        Playlist-Name 15px · Zeilenhöhe ~40px · Icons mit farbigen Hintergrundpillen · Row-Slide-Animation
+      </div>
+      <div class="mockup v2">
+        <div class="app-header">
+          <div class="app-logo">Playlist<span class="logo-dot">·</span>Cutter</div>
+          <div class="app-user">
+            <div class="user-pip">FL</div>
+            <span>Flo Ludiger</span>
+            <span style="color:#E5E7EB">·</span>
+            <span class="logout" style="display:flex;align-items:center;gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Abmelden
+            </span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Neue Playlist:</span>
+          <input class="toolbar-input" id="v2-name" value="Fresh Mix — ohne Best of 2023" placeholder="Playlist-Name…">
+          <span class="summary" id="v2-summary">~121 Tracks · 2 Quellen · 1 Ausschluss</span>
+          <button class="btn-create ripple-host" onclick="ripple(event)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Erstellen
+          </button>
+        </div>
+        <div class="body-grid" id="v2-grid"></div>
+      </div>
+    </div>
+
+    <!-- ════════════ VARIANT C — XL 16px ════════════ -->
+    <div id="v3" class="dir">
+      <div class="meta-bar">
+        <span class="meta-tag" style="background:#E0F2FE;color:#075985;">C · XL — 16px</span>
+        Playlist-Name 16px · Zeilenhöhe ~46px · Viel Luft · Maximaler Lesekomfort auf großem Screen
+      </div>
+      <div class="mockup v3">
+        <div class="app-header">
+          <div class="app-logo">Playlist<span class="logo-dot">·</span>Cutter</div>
+          <div class="app-user">
+            <div class="user-pip">FL</div>
+            <span>Flo Ludiger</span>
+            <span style="color:#E5E7EB">·</span>
+            <span class="logout" style="display:flex;align-items:center;gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Abmelden
+            </span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Neue Playlist:</span>
+          <input class="toolbar-input" id="v3-name" value="Fresh Mix — ohne Best of 2023" placeholder="Playlist-Name…">
+          <span class="summary" id="v3-summary">~121 Tracks · 2 Quellen · 1 Ausschluss</span>
+          <button class="btn-create ripple-host" onclick="ripple(event)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Erstellen
+          </button>
+        </div>
+        <div class="body-grid" id="v3-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const PLAYLISTS = [
+      { name: 'Deep Focus',             tracks: 147 },
+      { name: 'Chill Vibes 2024',       tracks: 89  },
+      { name: 'Morning Routine',        tracks: 34  },
+      { name: 'Late Night Coding',      tracks: 212 },
+      { name: 'Weekend Mix',            tracks: 56  },
+      { name: 'Liked Songs',            tracks: 834 },
+      { name: 'Road Trips & Adventures',tracks: 73  },
+      { name: 'Soft Pop Favorites',     tracks: 41  },
+    ];
+
+    /* SVG icons */
+    const ICON_PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`;
+    const ICON_MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>`;
+    const ICON_CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    const ICON_MUSIC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+
+    /* State per variant */
+    const state = {
+      v1: { source: new Set([0,2]), exclude: new Set([1]) }, // Deep Focus + Morning Routine as source; Best of 2023 as exclude (idx in playlists)
+      v2: { source: new Set([0,2]), exclude: new Set([1]) },
+      v3: { source: new Set([0,2]), exclude: new Set([1]) },
+    };
+
+    // Override state so excludes reference correct playlist
+    // Let's use: sources=[0,2] (Deep Focus, Morning Routine), excludes=[5] (Liked Songs→ replace with "Best of 2023" — we'll add it)
+    const PLAYLISTS_EXCLUDE = [
+      { name: 'Liked Songs',            tracks: 834 },
+      { name: 'Best of 2023',           tracks: 60  },
+      { name: 'Already Heard',          tracks: 193 },
+      { name: 'Overplayed',             tracks: 45  },
+      { name: 'Party Classics',         tracks: 78  },
+      { name: 'Deep Focus',             tracks: 147 },
+      { name: 'Morning Routine',        tracks: 34  },
+      { name: 'Weekend Mix',            tracks: 56  },
+    ];
+
+    const stateEx = {
+      v1: new Set([1]),
+      v2: new Set([1]),
+      v3: new Set([1]),
+    };
+    const stateSrc = {
+      v1: new Set([0,2]),
+      v2: new Set([0,2]),
+      v3: new Set([0,2]),
+    };
+
+    function buildGrid(vId) {
+      const grid = document.getElementById(vId + '-grid');
+      grid.innerHTML = '';
+      grid.appendChild(buildCol(vId, 'source'));
+      grid.appendChild(buildCol(vId, 'exclude'));
+      updateSummary(vId);
+    }
+
+    function buildCol(vId, role) {
+      const isSource = role === 'source';
+      const list = isSource ? PLAYLISTS : PLAYLISTS_EXCLUDE;
+      const selSet = isSource ? stateSrc[vId] : stateEx[vId];
+
+      const wrap = document.createElement('div');
+      wrap.className = 'tw';
+
+      // Column header
+      const hd = document.createElement('div');
+      hd.className = 'col-hd';
+      const count = selSet.size;
+      hd.innerHTML = `
+        <div class="col-hd-left">
+          <div class="col-icon ${isSource ? 'icon-s' : 'icon-e'}">${isSource ? ICON_PLUS : ICON_MINUS}</div>
+          <span class="${isSource ? 'col-title-s' : 'col-title-e'}">${isSource ? 'Quellen' : 'Ausschlüsse'}</span>
+        </div>
+        <span class="badge ${isSource ? 'badge-s' : 'badge-e'}" id="${vId}-badge-${role}">${count} ausgewählt</span>
+      `;
+      wrap.appendChild(hd);
+
+      // Rows
+      list.forEach((pl, i) => {
+        const on = selSet.has(i);
+        const row = document.createElement('div');
+        row.className = `row${on ? (isSource ? ' s-on' : ' e-on') : ''}`;
+        row.innerHTML = `
+          <div class="cb ${on ? (isSource ? 'cb s-on' : 'cb e-on') : 'cb'}" id="${vId}-${role}-cb-${i}">${ICON_CHECK}</div>
+          <span class="pl-name${on ? ' bold' : ''}">${pl.name}</span>
+          <span class="pl-tracks">${pl.tracks}</span>
+        `;
+        row.addEventListener('click', () => toggle(vId, role, i, row));
+        wrap.appendChild(row);
+      });
+
+      return wrap;
+    }
+
+    function toggle(vId, role, idx, row) {
+      const isSource = role === 'source';
+      const selSet = isSource ? stateSrc[vId] : stateEx[vId];
+
+      if (selSet.has(idx)) {
+        selSet.delete(idx);
+        row.classList.remove(isSource ? 's-on' : 'e-on');
+        const cb = document.getElementById(`${vId}-${role}-cb-${idx}`);
+        cb.className = 'cb';
+        row.querySelector('.pl-name').classList.remove('bold');
+      } else {
+        selSet.add(idx);
+        row.classList.add(isSource ? 's-on' : 'e-on');
+        const cb = document.getElementById(`${vId}-${role}-cb-${idx}`);
+        cb.className = `cb ${isSource ? 's-on' : 'e-on'}`;
+        cb.classList.add('pop');
+        cb.addEventListener('animationend', () => cb.classList.remove('pop'), { once: true });
+        row.querySelector('.pl-name').classList.add('bold');
+      }
+
+      // Update badge with bounce
+      const badge = document.getElementById(`${vId}-badge-${role}`);
+      badge.textContent = `${selSet.size} ausgewählt`;
+      badge.classList.add('badge-bounce');
+      badge.addEventListener('animationend', () => badge.classList.remove('badge-bounce'), { once: true });
+
+      updateSummary(vId);
+    }
+
+    function updateSummary(vId) {
+      const srcTracks = [...stateSrc[vId]].reduce((acc, i) => acc + PLAYLISTS[i].tracks, 0);
+      const exTracks  = [...stateEx[vId]].reduce((acc, i) => acc + PLAYLISTS_EXCLUDE[i].tracks, 0);
+      const est = Math.max(0, srcTracks - exTracks);
+      const el = document.getElementById(vId + '-summary');
+      if (el) el.textContent = `~${est} Tracks · ${stateSrc[vId].size} Quellen · ${stateEx[vId].size} Ausschlüsse`;
+    }
+
+    function ripple(e) {
+      const btn = e.currentTarget;
+      const circle = document.createElement('span');
+      const d = Math.max(btn.offsetWidth, btn.offsetHeight);
+      const rect = btn.getBoundingClientRect();
+      circle.className = 'ripple';
+      circle.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX-rect.left-d/2}px;top:${e.clientY-rect.top-d/2}px`;
+      btn.appendChild(circle);
+      circle.addEventListener('animationend', () => circle.remove());
+    }
+
+    // Build all grids
+    ['v1','v2','v3'].forEach(buildGrid);
+
+    function show(id) {
+      document.querySelectorAll('.dir').forEach(el => el.classList.remove('show'));
+      document.getElementById(id).classList.add('show');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>
