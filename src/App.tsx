@@ -6,13 +6,16 @@ import { AppHeader } from '@/components/AppHeader'
 import { PlaylistColumns } from '@/components/PlaylistColumns'
 import { useAuth } from '@/hooks/useAuth'
 import { isTokenValid, loadToken } from '@/lib/auth'
-import { getUserProfile, getPlaylists } from '@/lib/spotifyApi'
+import { getUserProfile, getPlaylists, getPlaylistTracks } from '@/lib/spotifyApi'
+import { runWithConcurrency } from '@/lib/concurrency'
+import { buildTrackSet } from '@/lib/diffEngine'
 
 function AppContent() {
   const { state, dispatch } = useAppContext()
   const { handleCallback, handleAuthError } = useAuth()
   const callbackHandled = useRef(false)
   const playlistsLoaded = useRef(false)
+  const trackDataRef = useRef<{ source: Set<string>; exclude: Set<string> } | null>(null)
 
   useEffect(() => {
     if (callbackHandled.current) return
@@ -88,6 +91,71 @@ function AppContent() {
         }
       })
 
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.phase])
+
+  useEffect(() => {
+    if (state.phase !== 'creating') return
+
+    let cancelled = false
+
+    async function loadTracks() {
+      const token = loadToken()
+      if (!token) {
+        dispatch({ type: 'SET_PHASE', payload: 'session-expired' })
+        return
+      }
+
+      dispatch({ type: 'SET_PROGRESS', payload: 0 }) // P4: initialer 0%-Dispatch
+
+      try {
+        const allIds = [...state.selectedSources, ...state.selectedExcludes]
+        if (allIds.length === 0) return // P3: Guard gegen Division durch Null
+
+        const tasks = allIds.map((playlistId) => () => getPlaylistTracks(token, playlistId))
+
+        let completed = 0
+        const wrappedTasks = tasks.map((task) => async () => {
+          const result = await task()
+          if (!cancelled) {
+            completed++
+            dispatch({ type: 'SET_PROGRESS', payload: Math.round((completed / tasks.length) * 80) })
+          }
+          return result
+        })
+
+        const results = await runWithConcurrency(wrappedTasks, 5)
+        if (cancelled) return
+
+        const sourceResults = results.slice(0, state.selectedSources.length)
+        const excludeResults = results.slice(state.selectedSources.length)
+
+        trackDataRef.current = {
+          source: buildTrackSet(sourceResults),
+          exclude: buildTrackSet(excludeResults),
+        }
+
+        // Story 3.2 wird hier den nächsten Schritt einbauen (Diff + createPlaylist)
+      } catch (err) {
+        if (!cancelled) {
+          // P1: Auth-Fehler → Session-Expired-Flow, nicht generischer Error-Screen
+          if (
+            err instanceof Error &&
+            (err.message === 'Spotify API Fehler: 401' || err.message === 'Spotify API Fehler: 403')
+          ) {
+            handleAuthError()
+          } else {
+            dispatch({ type: 'SET_ERROR', payload: 'Tracks konnten nicht geladen werden. Bitte versuche es erneut.' })
+            dispatch({ type: 'SET_PHASE', payload: 'error' })
+          }
+        }
+      }
+    }
+
+    loadTracks()
     return () => {
       cancelled = true
     }

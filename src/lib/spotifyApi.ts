@@ -1,7 +1,7 @@
 // Spotify Web API Client — einziger Kontaktpunkt zur Spotify Web API
 // Token wird immer als Parameter übergeben, kein direkter localStorage-Zugriff
 
-import type { Playlist } from '@/types'
+import type { Playlist, Track } from '@/types'
 
 const SPOTIFY_BASE_URL = 'https://api.spotify.com/v1'
 
@@ -56,12 +56,59 @@ export async function getPlaylists(token: string): Promise<Playlist[]> {
     }
 
     if (data.next) {
-      const nextUrl = new URL(data.next)
-      path = nextUrl.pathname + nextUrl.search
+      try {
+        const nextUrl = new URL(data.next)
+        path = nextUrl.pathname + nextUrl.search
+      } catch {
+        throw new Error('Spotify API Fehler: ungültige Antwort')
+      }
     } else {
       path = null
     }
   }
 
   return allPlaylists
+}
+
+interface TracksPage {
+  items: Array<{
+    track: { id: string | null } | null
+  }> | null
+  next: string | null
+}
+
+export async function getPlaylistTracks(token: string, playlistId: string): Promise<Track[]> {
+  const allTracks: Track[] = []
+  let path: string | null = `/playlists/${playlistId}/tracks?limit=100`
+  let pageCount = 0
+
+  while (path && pageCount < MAX_PAGES) {
+    pageCount++
+    const response = await spotifyFetch(token, path)
+    let data: TracksPage
+    try {
+      data = await response.json()
+    } catch {
+      throw new Error('Spotify API Fehler: ungültige Antwort')
+    }
+
+    for (const item of data.items ?? []) {
+      if (item.track?.id) {
+        allTracks.push({ id: item.track.id })
+      }
+    }
+
+    if (data.next) {
+      try {
+        const nextUrl = new URL(data.next)
+        path = nextUrl.pathname + nextUrl.search
+      } catch {
+        throw new Error('Spotify API Fehler: ungültige Antwort')
+      }
+    } else {
+      path = null
+    }
+  }
+
+  return allTracks
 }
