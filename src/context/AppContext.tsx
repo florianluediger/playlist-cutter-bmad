@@ -8,7 +8,7 @@ interface AppContextValue {
   dispatch: React.Dispatch<AppAction>
 }
 
-const AppContext = createContext<AppContextValue | null>(null)
+export const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState)

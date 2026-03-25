@@ -86,4 +86,34 @@ describe('PlaylistRow', () => {
     await user.keyboard(' ')
     expect(onToggle).toHaveBeenCalledTimes(1)
   })
+
+  it('hat border-l-sky-600 Klasse wenn selected=true und role=source', () => {
+    render(
+      <PlaylistRow
+        name="Source Playlist"
+        trackCount={5}
+        role="source"
+        selected={true}
+        onToggle={() => {}}
+      />,
+    )
+
+    const row = screen.getByText('Source Playlist').closest('div[tabindex="0"]')! as HTMLElement
+    expect(row.className).toContain('border-l-sky-600')
+  })
+
+  it('hat border-l-rose-500 Klasse wenn selected=true und role=exclude', () => {
+    render(
+      <PlaylistRow
+        name="Exclude Playlist"
+        trackCount={5}
+        role="exclude"
+        selected={true}
+        onToggle={() => {}}
+      />,
+    )
+
+    const row = screen.getByText('Exclude Playlist').closest('div[tabindex="0"]')! as HTMLElement
+    expect(row.className).toContain('border-l-rose-500')
+  })
 })
