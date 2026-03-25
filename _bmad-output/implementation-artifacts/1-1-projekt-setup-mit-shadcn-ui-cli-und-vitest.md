@@ -1,6 +1,6 @@
 # Story 1.1: Projekt-Setup mit shadcn/ui CLI und Vitest
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,68 +21,60 @@ damit ich sofort mit der Feature-Entwicklung beginnen kann ohne manuelle Konfigu
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Projekt mit shadcn/ui CLI initialisieren (AC: 1, 3)
-  - [ ] `yarn dlx shadcn@latest init -t vite` im Projekt-Root ausführen
-  - [ ] Im CLI-Dialog: TypeScript, Tailwind CSS v4 (Vite Plugin), `@/` Alias, dark mode `class` wählen
-  - [ ] Prüfen: `components.json`, `vite.config.ts`, `tsconfig.app.json` mit `@/`-Alias konfiguriert
-  - [ ] Prüfen: `yarn dev` startet auf `localhost:5173` ohne Fehler
+- [x] Task 1: Projekt mit shadcn/ui CLI initialisieren (AC: 1, 3)
+  - [x] `yarn dlx shadcn@latest init -t vite` im Projekt-Root ausführen
+  - [x] Im CLI-Dialog: TypeScript, Tailwind CSS v4 (Vite Plugin), `@/` Alias, dark mode `class` wählen
+  - [x] Prüfen: `components.json`, `vite.config.ts`, `tsconfig.app.json` mit `@/`-Alias konfiguriert
+  - [x] Prüfen: `yarn dev` startet auf `localhost:5173` ohne Fehler
 
-- [ ] Task 2: Vitest und Testing-Libraries installieren (AC: 2)
-  - [ ] `yarn add -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom @vitejs/plugin-react`
-  - [ ] `vitest.config.ts` erstellen mit `environment: 'jsdom'`, `globals: true`, `@/`-Alias, `setupFiles: ['./src/test/setup.ts']`, `plugins: [react()]`
-  - [ ] `src/test/setup.ts` erstellen mit `import '@testing-library/jest-dom/vitest'` (Vitest-spezifisches Subpath für korrekte TypeScript-Typen)
-  - [ ] `package.json` Scripts ergänzen: `"test": "vitest"`, `"test:run": "vitest run"`
-  - [ ] Smoke-Test erstellen: `src/test/smoke.test.ts` mit trivialem `expect(true).toBe(true)`
-  - [ ] Prüfen: `yarn test:run` läuft grün durch
+- [x] Task 2: Vitest und Testing-Libraries installieren (AC: 2)
+  - [x] `yarn add -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom @vitejs/plugin-react`
+  - [x] `vitest.config.ts` erstellen mit `environment: 'jsdom'`, `globals: true`, `@/`-Alias, `setupFiles: ['./src/test/setup.ts']`, `plugins: [react()]`
+  - [x] `src/test/setup.ts` erstellen mit `import '@testing-library/jest-dom/vitest'` (Vitest-spezifisches Subpath für korrekte TypeScript-Typen)
+  - [x] `package.json` Scripts ergänzen: `"test": "vitest"`, `"test:run": "vitest run"`
+  - [x] Smoke-Test erstellen: `src/test/smoke.test.ts` mit trivialem `expect(true).toBe(true)`
+  - [x] Prüfen: `yarn test:run` läuft grün durch
 
-- [ ] Task 3: shadcn/ui Komponenten installieren (AC: 4)
-  - [ ] `yarn dlx shadcn@latest add checkbox dialog progress input button badge separator`
-  - [ ] Prüfen: Alle 7 Komponenten unter `src/components/ui/` vorhanden
+- [x] Task 3: shadcn/ui Komponenten installieren (AC: 4)
+  - [x] `yarn dlx shadcn@latest add checkbox dialog progress input button badge separator`
+  - [x] Prüfen: Alle 7 Komponenten unter `src/components/ui/` vorhanden
 
-- [ ] Task 4: Weitere Abhängigkeiten installieren (AC: 3, 8)
-  - [ ] `yarn add @fontsource/plus-jakarta-sans` — Schrift
-  - [ ] `yarn add lucide-react` — Icons (im gesamten Projekt verwendet)
-  - [ ] `yarn add framer-motion` — Layout-Animationen (Auswahl → Erstellungs-Phase, Epic 4)
+- [x] Task 4: Weitere Abhängigkeiten installieren (AC: 3, 8)
+  - [x] `yarn add @fontsource/plus-jakarta-sans` — Schrift
+  - [x] `yarn add lucide-react` — Icons (bereits durch shadcn/ui installiert)
+  - [x] `yarn add framer-motion` — Layout-Animationen (Auswahl → Erstellungs-Phase, Epic 4)
 
-- [ ] Task 5: Plus Jakarta Sans konfigurieren (AC: 8)
-  - [ ] Import in `src/main.tsx` (nur benötigte Gewichte für kleinere Bundle-Size): `import '@fontsource/plus-jakarta-sans/400.css'` + `import '@fontsource/plus-jakarta-sans/500.css'` + `import '@fontsource/plus-jakarta-sans/600.css'` + `import '@fontsource/plus-jakarta-sans/700.css'`
-  - [ ] In `src/index.css` (oder `src/App.css`): `font-family: 'Plus Jakarta Sans', sans-serif` als `body`-Default setzen
-  - [ ] Tailwind-Konfiguration prüfen: shadcn/ui CSS Variable `--font-sans` auf Plus Jakarta Sans zeigen lassen (falls vorhanden)
+- [x] Task 5: Plus Jakarta Sans konfigurieren (AC: 8)
+  - [x] Import in `src/main.tsx` (nur benötigte Gewichte für kleinere Bundle-Size): `import '@fontsource/plus-jakarta-sans/400.css'` + `import '@fontsource/plus-jakarta-sans/500.css'` + `import '@fontsource/plus-jakarta-sans/600.css'` + `import '@fontsource/plus-jakarta-sans/700.css'`
+  - [x] In `src/index.css`: `font-family: 'Plus Jakarta Sans', sans-serif` als `body`-Default und `--font-sans` CSS-Variable gesetzt
+  - [x] Tailwind-Konfiguration prüfen: `--font-sans` zeigt auf Plus Jakarta Sans
 
-- [ ] Task 6: Vollständige Projektstruktur anlegen (AC: 7)
-  - [ ] `src/hooks/` — Verzeichnis anlegen
-  - [ ] `src/lib/` — Verzeichnis anlegen
-  - [ ] `src/context/` — Verzeichnis anlegen
-  - [ ] `src/types/index.ts` — Leere Datei mit Kommentar `// Alle TypeScript-Typen des Projekts` anlegen
-  - [ ] Hinweis: `src/components/ui/` wird durch shadcn/ui CLI automatisch angelegt
+- [x] Task 6: Vollständige Projektstruktur anlegen (AC: 7)
+  - [x] `src/hooks/` — Verzeichnis anlegen
+  - [x] `src/lib/` — Verzeichnis anlegen (durch shadcn/ui CLI mit `utils.ts`)
+  - [x] `src/context/` — Verzeichnis anlegen
+  - [x] `src/types/index.ts` — Leere Datei mit Kommentar `// Alle TypeScript-Typen des Projekts` anlegen
+  - [x] Hinweis: `src/components/ui/` wird durch shadcn/ui CLI automatisch angelegt
 
-- [ ] Task 7: Umgebungsvariablen konfigurieren (AC: 5, 6)
-  - [ ] `.env.local` erstellen (nicht committed, in `.gitignore` prüfen):
-    ```
-    VITE_SPOTIFY_CLIENT_ID=your_client_id_here
-    VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173
-    ```
-  - [ ] `.env.example` erstellen (committed, ohne echte Werte):
-    ```
-    VITE_SPOTIFY_CLIENT_ID=
-    VITE_SPOTIFY_REDIRECT_URI=
-    ```
-  - [ ] Prüfen: `.env.local` steht in `.gitignore`
+- [x] Task 7: Umgebungsvariablen konfigurieren (AC: 5, 6)
+  - [x] `.env.local` erstellen (nicht committed, in `.gitignore` prüfen)
+  - [x] `.env.example` erstellen (committed, ohne echte Werte)
+  - [x] Prüfen: `.env.local` steht in `.gitignore` (via `*.local`)
 
-- [ ] Task 8: vite.config.ts für GitHub Pages vorbereiten (AC: 1)
-  - [ ] `base: '/playlist-cutter/'` in `vite.config.ts` setzen — PFLICHT für GitHub Pages Deployment (Epic 4)
-  - [ ] `@/`-Alias in `vite.config.ts` sicherstellen: `resolve: { alias: { '@': path.resolve(__dirname, './src') } }`
+- [x] Task 8: vite.config.ts für GitHub Pages vorbereiten (AC: 1)
+  - [x] `base: '/playlist-cutter/'` in `vite.config.ts` gesetzt
+  - [x] `@/`-Alias in `vite.config.ts` konfiguriert
 
-- [ ] Task 9: App.tsx bereinigen (AC: 1)
-  - [ ] Von shadcn/ui CLI generierte Demo-Inhalte aus `App.tsx` entfernen
-  - [ ] `App.tsx` auf Minimal-Stub reduzieren: `<div>Playlist Cutter</div>` reicht für diese Story
-  - [ ] Nicht benötigte Demo-CSS-Klassen aus `App.css` / `index.css` entfernen
+- [x] Task 9: App.tsx bereinigen (AC: 1)
+  - [x] Demo-Inhalte aus `App.tsx` entfernt
+  - [x] `App.tsx` auf Minimal-Stub reduziert: `<div>Playlist Cutter</div>`
+  - [x] `App.css` gelöscht
 
-- [ ] Task 10: Abschluss-Verifikation (AC: 1–8)
-  - [ ] `yarn dev` → keine Fehler, Browser zeigt einfachen Content
-  - [ ] `yarn test:run` → alle Tests grün
-  - [ ] `yarn build` → Build läuft ohne TypeScript-Fehler durch
-  - [ ] Projektstruktur-Check: Alle 6 Verzeichnisse vorhanden, `src/types/index.ts` existiert
+- [x] Task 10: Abschluss-Verifikation (AC: 1–8)
+  - [x] `yarn dev` → keine Fehler, Browser zeigt einfachen Content
+  - [x] `yarn test:run` → alle Tests grün (1/1)
+  - [x] `yarn build` → Build läuft ohne TypeScript-Fehler durch
+  - [x] Projektstruktur-Check: Alle 6 Verzeichnisse vorhanden, `src/types/index.ts` existiert
 
 ## Dev Notes
 
@@ -237,6 +229,52 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+- Yarn 1.x hat kein `dlx` — auf Yarn 4 via Corepack (npm install -g corepack) umgestellt
+- Yarn 4 PnP inkompatibel mit Node.js v25 ESM Loader — globales `nodeLinker: node-modules` gesetzt
+- `yarn dlx shadcn@latest init` ist interaktiv (2 arrow-key Prompts); user hat manuell Radix + Nova gewählt
+- Vite create-template enthält kein Tailwind/alias → manuell via `yarn add @tailwindcss/vite` und tsconfig ergänzt
+- shadcn init hat Geist Font (Nova Preset) installiert → durch Plus Jakarta Sans ersetzt
+- Vitest globals (`describe`, `it`) nicht in tsconfig — `"types": ["vitest/globals"]` + `"exclude": ["src/test"]` ergänzt
+
 ### Completion Notes List
 
+- Projekt-Setup mit Vite 8 + React 19 + TypeScript 5.9 + Tailwind CSS v4.2 + shadcn/ui (Radix/Nova) abgeschlossen
+- Alle 7 shadcn/ui Komponenten unter `src/components/ui/` installiert
+- Vitest 4.1 mit jsdom, @testing-library/react, jest-dom; Smoke-Test läuft grün
+- Plus Jakarta Sans (400/500/600/700) als globaler Font konfiguriert (ersetzt shadcn-Standard Geist)
+- GitHub Pages base path `/playlist-cutter/` in vite.config.ts gesetzt
+- `@/`-Alias in vite.config.ts, tsconfig.json und tsconfig.app.json konfiguriert
+- `yarn build` erfolgreich ohne TypeScript-Fehler
+
 ### File List
+
+package.json
+index.html
+vite.config.ts
+vitest.config.ts
+tsconfig.json
+tsconfig.app.json
+tsconfig.node.json
+eslint.config.js
+components.json
+.env.local
+.env.example
+.gitignore
+src/main.tsx
+src/App.tsx
+src/index.css
+src/lib/utils.ts
+src/types/index.ts
+src/test/setup.ts
+src/test/smoke.test.ts
+src/components/ui/badge.tsx
+src/components/ui/button.tsx
+src/components/ui/checkbox.tsx
+src/components/ui/dialog.tsx
+src/components/ui/input.tsx
+src/components/ui/progress.tsx
+src/components/ui/separator.tsx
+
+## Change Log
+
+- 2026-03-25: Story implementiert — Projekt-Grundgerüst mit Vite 8, React 19, TypeScript, Tailwind CSS v4.2, shadcn/ui, Vitest, Plus Jakarta Sans aufgesetzt. Alle ACs erfüllt, Build und Tests grün.
