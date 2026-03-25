@@ -43,8 +43,8 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Projekt-Setup & Authentifizierung
-  epic-1: backlog
-  1-1-projekt-setup-mit-shadcn-ui-cli-und-vitest: backlog
+  epic-1: in-progress
+  1-1-projekt-setup-mit-shadcn-ui-cli-und-vitest: in-progress
   1-2-spotify-oauth-pkce-login: backlog
   1-3-session-persistenz-logout-und-appheader: backlog
   1-4-token-ablauf-erkennung-und-re-login-flow: backlog
