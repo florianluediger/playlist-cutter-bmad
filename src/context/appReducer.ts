@@ -8,12 +8,16 @@ export const initialState: AppState = {
   playlistName: '',
   error: null,
   progress: 0,
+  userName: null,
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_PHASE':
       return { ...state, phase: action.payload }
+
+    case 'SET_USER':
+      return { ...state, userName: action.payload }
 
     case 'SET_PLAYLISTS':
       return { ...state, playlists: action.payload }

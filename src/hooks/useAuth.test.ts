@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { AppProvider } from '@/context/AppContext'
+import { AppProvider, useAppContext } from '@/context/AppContext'
 import { useAuth } from '@/hooks/useAuth'
 import * as authLib from '@/lib/auth'
+import * as spotifyApiLib from '@/lib/spotifyApi'
 
 function wrapper({ children }: { children: React.ReactNode }) {
   return AppProvider({ children })
@@ -38,6 +39,66 @@ describe('useAuth', () => {
       // Wir prüfen dass clearToken aufgerufen wurde (kein Error)
       expect(localStorage.getItem('playlist_cutter_access_token')).toBeNull()
     })
+
+    it('löscht userName aus dem State (dispatcht SET_USER null)', () => {
+      const clearTokenSpy = vi.spyOn(authLib, 'clearToken')
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), ctx: useAppContext() }),
+        { wrapper }
+      )
+      act(() => {
+        result.current.ctx.dispatch({ type: 'SET_USER', payload: 'Test User' })
+      })
+      act(() => {
+        result.current.auth.logout()
+      })
+
+      expect(clearTokenSpy).toHaveBeenCalledOnce()
+      expect(result.current.ctx.state.userName).toBeNull()
+    })
+  })
+
+  describe('handleAuthError()', () => {
+    it('löscht den Token (clearToken aufgerufen)', () => {
+      localStorage.setItem('playlist_cutter_access_token', 'test-token')
+      localStorage.setItem('playlist_cutter_token_expiry', (Date.now() + 3600000).toString())
+
+      const clearTokenSpy = vi.spyOn(authLib, 'clearToken')
+      const { result } = renderHook(() => useAuth(), { wrapper })
+      act(() => {
+        result.current.handleAuthError()
+      })
+
+      expect(clearTokenSpy).toHaveBeenCalledOnce()
+      expect(localStorage.getItem('playlist_cutter_access_token')).toBeNull()
+    })
+
+    it('dispatcht SET_USER mit null', () => {
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), ctx: useAppContext() }),
+        { wrapper }
+      )
+      act(() => {
+        result.current.ctx.dispatch({ type: 'SET_USER', payload: 'Test User' })
+      })
+      act(() => {
+        result.current.auth.handleAuthError()
+      })
+
+      expect(result.current.ctx.state.userName).toBeNull()
+    })
+
+    it('dispatcht SET_PHASE mit "session-expired"', () => {
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), ctx: useAppContext() }),
+        { wrapper }
+      )
+      act(() => {
+        result.current.auth.handleAuthError()
+      })
+
+      expect(result.current.ctx.state.phase).toBe('session-expired')
+    })
   })
 
   describe('handleCallback() — Fehler-Fallback', () => {
@@ -56,6 +117,7 @@ describe('useAuth', () => {
 
     it('bereinigt die URL und speichert Token bei erfolgreichem Token-Exchange', async () => {
       vi.spyOn(authLib, 'exchangeCodeForToken').mockResolvedValueOnce({ accessToken: 'mocked-access-token', expiresIn: 3600 })
+      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann' })
       const saveTokenSpy = vi.spyOn(authLib, 'saveToken')
       const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
 
@@ -67,6 +129,40 @@ describe('useAuth', () => {
 
       expect(replaceStateSpy).toHaveBeenCalledWith({}, '', '/')
       expect(saveTokenSpy).toHaveBeenCalledWith('mocked-access-token', 3600)
+      expect(spotifyApiLib.getUserProfile).toHaveBeenCalledWith('mocked-access-token')
+    })
+
+    it('dispatcht SET_USER mit displayName nach erfolgreichem Token-Exchange', async () => {
+      vi.spyOn(authLib, 'exchangeCodeForToken').mockResolvedValueOnce({ accessToken: 'mocked-access-token', expiresIn: 3600 })
+      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann' })
+
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), ctx: useAppContext() }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.auth.handleCallback('valid-code')
+      })
+
+      expect(spotifyApiLib.getUserProfile).toHaveBeenCalledWith('mocked-access-token')
+      expect(result.current.ctx.state.userName).toBe('Max Mustermann')
+    })
+
+    it('setzt Phase auf session-expired wenn getUserProfile 401 wirft', async () => {
+      vi.spyOn(authLib, 'exchangeCodeForToken').mockResolvedValueOnce({ accessToken: 'mocked-token', expiresIn: 3600 })
+      vi.spyOn(spotifyApiLib, 'getUserProfile').mockRejectedValueOnce(new Error('Spotify API Fehler: 401'))
+
+      const { result } = renderHook(
+        () => ({ auth: useAuth(), ctx: useAppContext() }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.auth.handleCallback('valid-code')
+      })
+
+      expect(result.current.ctx.state.phase).toBe('session-expired')
     })
   })
 })

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-25
-last_updated: 2026-03-25  # updated by create-story for 1-3
+last_updated: 2026-03-25
 project: playlist-cutter-bmad
 project_key: NOKEY
 tracking_system: file-system
@@ -46,8 +46,8 @@ development_status:
   epic-1: in-progress
   1-1-projekt-setup-mit-shadcn-ui-cli-und-vitest: done
   1-2-spotify-oauth-pkce-login: done
-  1-3-session-persistenz-logout-und-appheader: ready-for-dev
-  1-4-token-ablauf-erkennung-und-re-login-flow: backlog
+  1-3-session-persistenz-logout-und-appheader: done
+  1-4-token-ablauf-erkennung-und-re-login-flow: done
   epic-1-retrospective: optional
 
   # Epic 2: Playlist-Auswahl-Interface

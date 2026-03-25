@@ -75,6 +75,25 @@ describe('appReducer', () => {
     })
   })
 
+  describe('SET_USER', () => {
+    it('setzt userName im State', () => {
+      const state = appReducer(initialState, { type: 'SET_USER', payload: 'Max Mustermann' })
+      expect(state.userName).toBe('Max Mustermann')
+    })
+
+    it('verändert keinen anderen State', () => {
+      const state = appReducer(initialState, { type: 'SET_USER', payload: 'Max Mustermann' })
+      expect(state.phase).toBe('login')
+      expect(state.playlists).toEqual([])
+    })
+
+    it('setzt userName auf null zurück (Logout)', () => {
+      const withUser: AppState = { ...initialState, userName: 'Max Mustermann' }
+      const state = appReducer(withUser, { type: 'SET_USER', payload: null })
+      expect(state.userName).toBeNull()
+    })
+  })
+
   describe('SET_ERROR', () => {
     it('setzt eine Fehlermeldung', () => {
       const state = appReducer(initialState, { type: 'SET_ERROR', payload: 'Fehler aufgetreten' })

@@ -1,5 +1,6 @@
 import { useAppContext } from '@/context/AppContext'
 import { buildAuthUrl, clearToken, exchangeCodeForToken, generateCodeVerifier, saveToken } from '@/lib/auth'
+import { getUserProfile } from '@/lib/spotifyApi'
 
 export function useAuth() {
   const { dispatch } = useAppContext()
@@ -13,6 +14,13 @@ export function useAuth() {
   function logout(): void {
     clearToken()
     dispatch({ type: 'SET_PHASE', payload: 'login' })
+    dispatch({ type: 'SET_USER', payload: null })
+  }
+
+  function handleAuthError(): void {
+    clearToken()
+    dispatch({ type: 'SET_USER', payload: null })
+    dispatch({ type: 'SET_PHASE', payload: 'session-expired' })
   }
 
   async function handleCallback(code: string): Promise<void> {
@@ -20,12 +28,25 @@ export function useAuth() {
       const { accessToken, expiresIn } = await exchangeCodeForToken(code)
       saveToken(accessToken, expiresIn)
       window.history.replaceState({}, '', '/')
-      dispatch({ type: 'SET_PHASE', payload: 'loading' })
+      try {
+        const { displayName } = await getUserProfile(accessToken)
+        dispatch({ type: 'SET_USER', payload: displayName })
+        dispatch({ type: 'SET_PHASE', payload: 'loading' })
+      } catch (profileError: unknown) {
+        if (
+          profileError instanceof Error &&
+          (profileError.message === 'Spotify API Fehler: 401' || profileError.message === 'Spotify API Fehler: 403')
+        ) {
+          handleAuthError()
+        } else {
+          dispatch({ type: 'SET_ERROR', payload: 'Verbindungsproblem — bitte Seite neu laden.' })
+        }
+      }
     } catch {
       window.history.replaceState({}, '', '/')
       // Nutzer bleibt auf LoginScreen ohne Fehlerzustand (AC 4)
     }
   }
 
-  return { login, logout, handleCallback }
+  return { login, logout, handleCallback, handleAuthError }
 }

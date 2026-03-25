@@ -10,7 +10,7 @@ export interface Track {
   id: string
 }
 
-export type AppPhase = 'login' | 'loading' | 'selection' | 'creating' | 'success' | 'error'
+export type AppPhase = 'login' | 'loading' | 'selection' | 'creating' | 'success' | 'error' | 'session-expired'
 
 export interface AppState {
   phase: AppPhase
@@ -20,10 +20,12 @@ export interface AppState {
   playlistName: string
   error: string | null
   progress: number             // 0–100
+  userName: string | null
 }
 
 export type AppAction =
   | { type: 'SET_PHASE'; payload: AppPhase }
+  | { type: 'SET_USER'; payload: string | null }
   | { type: 'SET_PLAYLISTS'; payload: Playlist[] }
   | { type: 'TOGGLE_SOURCE'; payload: string }
   | { type: 'TOGGLE_EXCLUDE'; payload: string }
