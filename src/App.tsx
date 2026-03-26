@@ -5,6 +5,8 @@ import { SessionExpiredScreen } from '@/components/SessionExpiredScreen'
 import { AppHeader } from '@/components/AppHeader'
 import { PlaylistColumns } from '@/components/PlaylistColumns'
 import { CreationPhase } from '@/components/CreationPhase'
+import { SuccessScreen } from '@/components/SuccessScreen'
+import { ErrorState } from '@/components/ErrorState'
 import { useAuth } from '@/hooks/useAuth'
 import { isTokenValid, loadToken } from '@/lib/auth'
 import { getUserProfile, getPlaylists, getPlaylistTracks, createPlaylist, addTracksToPlaylist } from '@/lib/spotifyApi'
@@ -228,13 +230,18 @@ function AppContent() {
           <CreationPhase />
         </>
       )
+    case 'success':
+      return (
+        <>
+          <AppHeader />
+          <SuccessScreen />
+        </>
+      )
     case 'error':
       return (
         <>
           <AppHeader />
-          <main className="max-w-6xl mx-auto p-6 md:p-8">
-            <p className="text-red-600">{state.error ?? 'Ein Fehler ist aufgetreten.'}</p>
-          </main>
+          <ErrorState />
         </>
       )
     default:
