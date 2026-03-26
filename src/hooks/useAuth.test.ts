@@ -47,7 +47,7 @@ describe('useAuth', () => {
         { wrapper }
       )
       act(() => {
-        result.current.ctx.dispatch({ type: 'SET_USER', payload: 'Test User' })
+        result.current.ctx.dispatch({ type: 'SET_USER', payload: { displayName: 'Test User', userId: 'user1' } })
       })
       act(() => {
         result.current.auth.logout()
@@ -79,7 +79,7 @@ describe('useAuth', () => {
         { wrapper }
       )
       act(() => {
-        result.current.ctx.dispatch({ type: 'SET_USER', payload: 'Test User' })
+        result.current.ctx.dispatch({ type: 'SET_USER', payload: { displayName: 'Test User', userId: 'user1' } })
       })
       act(() => {
         result.current.auth.handleAuthError()
@@ -117,7 +117,7 @@ describe('useAuth', () => {
 
     it('bereinigt die URL und speichert Token bei erfolgreichem Token-Exchange', async () => {
       vi.spyOn(authLib, 'exchangeCodeForToken').mockResolvedValueOnce({ accessToken: 'mocked-access-token', expiresIn: 3600 })
-      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann' })
+      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann', userId: 'user123' })
       const saveTokenSpy = vi.spyOn(authLib, 'saveToken')
       const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
 
@@ -134,7 +134,7 @@ describe('useAuth', () => {
 
     it('dispatcht SET_USER mit displayName nach erfolgreichem Token-Exchange', async () => {
       vi.spyOn(authLib, 'exchangeCodeForToken').mockResolvedValueOnce({ accessToken: 'mocked-access-token', expiresIn: 3600 })
-      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann' })
+      vi.spyOn(spotifyApiLib, 'getUserProfile').mockResolvedValueOnce({ displayName: 'Max Mustermann', userId: 'user123' })
 
       const { result } = renderHook(
         () => ({ auth: useAuth(), ctx: useAppContext() }),

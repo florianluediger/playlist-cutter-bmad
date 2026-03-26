@@ -6,9 +6,9 @@ import { AppHeader } from '@/components/AppHeader'
 import { PlaylistColumns } from '@/components/PlaylistColumns'
 import { useAuth } from '@/hooks/useAuth'
 import { isTokenValid, loadToken } from '@/lib/auth'
-import { getUserProfile, getPlaylists, getPlaylistTracks } from '@/lib/spotifyApi'
+import { getUserProfile, getPlaylists, getPlaylistTracks, createPlaylist, addTracksToPlaylist } from '@/lib/spotifyApi'
 import { runWithConcurrency } from '@/lib/concurrency'
-import { buildTrackSet } from '@/lib/diffEngine'
+import { buildTrackSet, calculateDiff } from '@/lib/diffEngine'
 
 function AppContent() {
   const { state, dispatch } = useAppContext()
@@ -25,9 +25,9 @@ function AppContent() {
     if (token && isTokenValid()) {
       let cancelled = false
       getUserProfile(token)
-        .then(({ displayName }) => {
+        .then(({ displayName, userId }) => {
           if (cancelled) return
-          dispatch({ type: 'SET_USER', payload: displayName })
+          dispatch({ type: 'SET_USER', payload: { displayName, userId } })
           dispatch({ type: 'SET_PHASE', payload: 'loading' })
         })
         .catch((error: unknown) => {
@@ -111,6 +111,8 @@ function AppContent() {
 
       dispatch({ type: 'SET_PROGRESS', payload: 0 }) // P4: initialer 0%-Dispatch
 
+      let playlistUrl: string | undefined
+
       try {
         const allIds = [...state.selectedSources, ...state.selectedExcludes]
         if (allIds.length === 0) return // P3: Guard gegen Division durch Null
@@ -138,7 +140,40 @@ function AppContent() {
           exclude: buildTrackSet(excludeResults),
         }
 
-        // Story 3.2 wird hier den nächsten Schritt einbauen (Diff + createPlaylist)
+        const { source, exclude } = trackDataRef.current
+
+        // Schritt: Diff berechnen
+        const diff = calculateDiff(source, exclude)
+        if (!cancelled) dispatch({ type: 'SET_PROGRESS', payload: 85 })
+
+        // Guard: leere Differenz
+        if (diff.length === 0) {
+          if (!cancelled) {
+            dispatch({ type: 'SET_ERROR', payload: 'Die Differenzmenge ist leer — alle Tracks sind in den Ausschluss-Playlisten enthalten.' })
+            dispatch({ type: 'SET_PHASE', payload: 'error' })
+          }
+          return
+        }
+
+        // Schritt: Playlist erstellen
+        if (!state.userId) throw new Error('Keine Nutzer-ID verfügbar')
+        const { id: playlistId, url } = await createPlaylist(
+          token,
+          state.userId,
+          state.playlistName
+        )
+        playlistUrl = url
+        if (cancelled) return
+        dispatch({ type: 'SET_PROGRESS', payload: 90 })
+
+        // Schritt: Tracks hinzufügen
+        await addTracksToPlaylist(token, playlistId, diff)
+        if (cancelled) return
+
+        // Erfolg
+        dispatch({ type: 'SET_CREATED_PLAYLIST', payload: { url: playlistUrl, trackCount: diff.length } })
+        dispatch({ type: 'SET_PROGRESS', payload: 100 })
+        dispatch({ type: 'SET_PHASE', payload: 'success' })
       } catch (err) {
         if (!cancelled) {
           // P1: Auth-Fehler → Session-Expired-Flow, nicht generischer Error-Screen
@@ -147,8 +182,12 @@ function AppContent() {
             (err.message === 'Spotify API Fehler: 401' || err.message === 'Spotify API Fehler: 403')
           ) {
             handleAuthError()
+          } else if (playlistUrl) {
+            // Playlist wurde erstellt, aber Track-Hinzufügen schlug fehl
+            dispatch({ type: 'SET_ERROR', payload: `Tracks konnten nicht zur Playlist hinzugefügt werden. Die erstellte (leere) Playlist ist hier verfügbar: ${playlistUrl}` })
+            dispatch({ type: 'SET_PHASE', payload: 'error' })
           } else {
-            dispatch({ type: 'SET_ERROR', payload: 'Tracks konnten nicht geladen werden. Bitte versuche es erneut.' })
+            dispatch({ type: 'SET_ERROR', payload: 'Fehler beim Erstellen der Playlist. Bitte versuche es erneut.' })
             dispatch({ type: 'SET_PHASE', payload: 'error' })
           }
         }

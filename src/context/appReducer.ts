@@ -9,6 +9,9 @@ export const initialState: AppState = {
   error: null,
   progress: 0,
   userName: null,
+  userId: null,
+  createdPlaylistUrl: null,
+  createdTrackCount: 0,
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -17,7 +20,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, phase: action.payload }
 
     case 'SET_USER':
-      return { ...state, userName: action.payload }
+      return { ...state, userName: action.payload.displayName, userId: action.payload.userId }
 
     case 'SET_PLAYLISTS':
       return { ...state, playlists: action.payload }
@@ -47,6 +50,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_PROGRESS':
       return { ...state, progress: action.payload }
 
+    case 'SET_CREATED_PLAYLIST':
+      return { ...state, createdPlaylistUrl: action.payload.url, createdTrackCount: action.payload.trackCount }
+
     case 'RESET_SELECTION':
       return {
         ...state,
@@ -55,6 +61,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         playlistName: '',
         error: null,
         progress: 0,
+        createdPlaylistUrl: null,
+        createdTrackCount: 0,
       }
 
     default:

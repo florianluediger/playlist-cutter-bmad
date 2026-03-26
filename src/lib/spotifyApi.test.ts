@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getUserProfile, getPlaylistTracks } from '@/lib/spotifyApi'
+import { getUserProfile, getPlaylistTracks, createPlaylist, addTracksToPlaylist } from '@/lib/spotifyApi'
 
 describe('spotifyApi', () => {
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('spotifyApi', () => {
           headers: { Authorization: `Bearer ${mockToken}` },
         })
       )
-      expect(result).toEqual({ displayName: 'Max Mustermann' })
+      expect(result).toEqual({ displayName: 'Max Mustermann', userId: 'maxmustermann' })
     })
 
     it('wirft Fehler bei 401-Response', async () => {
@@ -55,7 +55,16 @@ describe('spotifyApi', () => {
       )
 
       const result = await getUserProfile('token')
-      expect(result).toEqual({ displayName: 'Nutzer' })
+      expect(result).toEqual({ displayName: 'Nutzer', userId: 'user123' })
+    })
+
+    it('gibt displayName und userId zurück', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response(JSON.stringify({ display_name: 'Max', id: 'user123' }), { status: 200 })
+      )
+
+      const result = await getUserProfile('token')
+      expect(result).toEqual({ displayName: 'Max', userId: 'user123' })
     })
 
     it('wirft Fehler bei ungültiger JSON-Antwort', async () => {
@@ -145,4 +154,74 @@ describe('spotifyApi', () => {
       expect(result).toEqual([])
     })
   })
+
+  describe('createPlaylist()', () => {
+    it('erstellt Playlist und gibt id und url zurück', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 'playlist123',
+            external_urls: { spotify: 'https://open.spotify.com/playlist/playlist123' },
+          }),
+          { status: 200 }
+        )
+      )
+
+      const result = await createPlaylist('token', 'user123', 'Meine Playlist')
+      expect(result).toEqual({ id: 'playlist123', url: 'https://open.spotify.com/playlist/playlist123' })
+
+      const fetchCall = vi.mocked(fetch).mock.calls[0]
+      expect(fetchCall[0]).toContain('/users/user123/playlists')
+      expect(JSON.parse(fetchCall[1]?.body as string)).toMatchObject({ name: 'Meine Playlist', public: false })
+    })
+
+    it('wirft Error bei API-Fehler', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response('Forbidden', { status: 403 })
+      )
+
+      await expect(createPlaylist('token', 'user123', 'Test')).rejects.toThrow('Spotify API Fehler: 403')
+    })
+
+    it('wirft Fehler bei ungültiger JSON-Antwort', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response('kein json', { status: 200 })
+      )
+
+      await expect(createPlaylist('token', 'user123', 'Test')).rejects.toThrow('Spotify API Fehler: ungültige Antwort')
+    })
+  })
+
+  describe('addTracksToPlaylist()', () => {
+    it('sendet korrekte URIs als Batches (150 Tracks → 2 Batches)', async () => {
+      const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('{}', { status: 200 })
+      )
+
+      const trackIds = Array.from({ length: 150 }, (_, i) => `track${i}`)
+      await addTracksToPlaylist('token', 'playlist123', trackIds)
+
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+      const firstBatchBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string)
+      expect(firstBatchBody.uris).toHaveLength(100)
+      expect(firstBatchBody.uris[0]).toBe('spotify:track:track0')
+      const secondBatchBody = JSON.parse(mockFetch.mock.calls[1][1]?.body as string)
+      expect(secondBatchBody.uris).toHaveLength(50)
+    })
+
+    it('wirft Error wenn ein Batch fehlschlägt', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response('Internal Server Error', { status: 500 })
+      )
+
+      await expect(addTracksToPlaylist('token', 'playlist123', ['t1'])).rejects.toThrow('Spotify API Fehler: 500')
+    })
+
+    it('tut nichts bei leerer Track-Liste', async () => {
+      const mockFetch = vi.spyOn(globalThis, 'fetch')
+      await addTracksToPlaylist('token', 'playlist123', [])
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+  })
 })
+

@@ -5,24 +5,37 @@ import type { Playlist, Track } from '@/types'
 
 const SPOTIFY_BASE_URL = 'https://api.spotify.com/v1'
 
-async function spotifyFetch(token: string, path: string): Promise<Response> {
+async function spotifyFetch(
+  token: string,
+  path: string,
+  options?: { method?: string; body?: string }
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+  }
+  if (options?.body) {
+    headers['Content-Type'] = 'application/json'
+  }
   const response = await fetch(`${SPOTIFY_BASE_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    method: options?.method ?? 'GET',
+    headers,
+    body: options?.body,
     signal: AbortSignal.timeout(10_000),
   })
   if (!response.ok) throw new Error(`Spotify API Fehler: ${response.status}`)
   return response
 }
 
-export async function getUserProfile(token: string): Promise<{ displayName: string }> {
+export async function getUserProfile(token: string): Promise<{ displayName: string; userId: string }> {
   const response = await spotifyFetch(token, '/me')
-  let data: { display_name: string | null }
+  let data: { display_name: string | null; id: string }
   try {
     data = await response.json()
   } catch {
     throw new Error('Spotify API Fehler: ungültige Antwort')
   }
-  return { displayName: data.display_name ?? 'Nutzer' }
+  if (!data.id) throw new Error('Spotify API Fehler: ungültige Antwort')
+  return { displayName: data.display_name ?? 'Nutzer', userId: data.id }
 }
 
 const MAX_PAGES = 200
@@ -111,4 +124,45 @@ export async function getPlaylistTracks(token: string, playlistId: string): Prom
   }
 
   return allTracks
+}
+
+interface CreatePlaylistResponse {
+  id: string
+  external_urls: { spotify: string }
+}
+
+export async function createPlaylist(
+  token: string,
+  userId: string,
+  name: string
+): Promise<{ id: string; url: string }> {
+  const body = JSON.stringify({ name, description: '', public: false })
+  const response = await spotifyFetch(token, `/users/${userId}/playlists`, {
+    method: 'POST',
+    body,
+  })
+  let data: CreatePlaylistResponse
+  try {
+    data = await response.json()
+  } catch {
+    throw new Error('Spotify API Fehler: ungültige Antwort')
+  }
+  if (!data.id || !data.external_urls?.spotify) throw new Error('Spotify API Fehler: ungültige Antwort')
+  return { id: data.id, url: data.external_urls.spotify }
+}
+
+export async function addTracksToPlaylist(
+  token: string,
+  playlistId: string,
+  trackIds: string[]
+): Promise<void> {
+  const BATCH_SIZE = 100
+  for (let i = 0; i < trackIds.length; i += BATCH_SIZE) {
+    const batch = trackIds.slice(i, i + BATCH_SIZE)
+    const uris = batch.map((id) => `spotify:track:${id}`)
+    await spotifyFetch(token, `/playlists/${playlistId}/tracks`, {
+      method: 'POST',
+      body: JSON.stringify({ uris }),
+    })
+  }
 }

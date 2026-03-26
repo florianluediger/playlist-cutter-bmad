@@ -76,21 +76,23 @@ describe('appReducer', () => {
   })
 
   describe('SET_USER', () => {
-    it('setzt userName im State', () => {
-      const state = appReducer(initialState, { type: 'SET_USER', payload: 'Max Mustermann' })
+    it('setzt userName und userId im State', () => {
+      const state = appReducer(initialState, { type: 'SET_USER', payload: { displayName: 'Max Mustermann', userId: 'user123' } })
       expect(state.userName).toBe('Max Mustermann')
+      expect(state.userId).toBe('user123')
     })
 
     it('verändert keinen anderen State', () => {
-      const state = appReducer(initialState, { type: 'SET_USER', payload: 'Max Mustermann' })
+      const state = appReducer(initialState, { type: 'SET_USER', payload: { displayName: 'Max Mustermann', userId: 'user123' } })
       expect(state.phase).toBe('login')
       expect(state.playlists).toEqual([])
     })
 
-    it('setzt userName auf null zurück (Logout)', () => {
-      const withUser: AppState = { ...initialState, userName: 'Max Mustermann' }
-      const state = appReducer(withUser, { type: 'SET_USER', payload: null })
+    it('setzt userName und userId auf null zurück (Logout)', () => {
+      const withUser: AppState = { ...initialState, userName: 'Max Mustermann', userId: 'user123' }
+      const state = appReducer(withUser, { type: 'SET_USER', payload: { displayName: null, userId: null } })
       expect(state.userName).toBeNull()
+      expect(state.userId).toBeNull()
     })
   })
 

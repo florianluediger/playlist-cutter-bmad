@@ -38,10 +38,35 @@ describe('diffEngine', () => {
   })
 
   describe('calculateDiff()', () => {
-    it('ist noch nicht implementiert und wirft einen Fehler (Story 3.2 Stub)', () => {
-      expect(() =>
-        calculateDiff(new Set(['a', 'b']), new Set(['b']))
-      ).toThrow('calculateDiff: noch nicht implementiert — Story 3.2')
+    it('leere Quellen → leeres Ergebnis', () => {
+      const result = calculateDiff(new Set(), new Set(['a', 'b']))
+      expect(result).toEqual([])
+    })
+
+    it('leere Ausschlüsse → alle Quell-Tracks', () => {
+      const result = calculateDiff(new Set(['a', 'b', 'c']), new Set())
+      expect(result).toEqual(expect.arrayContaining(['a', 'b', 'c']))
+      expect(result).toHaveLength(3)
+    })
+
+    it('vollständige Überschneidung → leeres Ergebnis', () => {
+      const result = calculateDiff(new Set(['a', 'b']), new Set(['a', 'b', 'c']))
+      expect(result).toEqual([])
+    })
+
+    it('partielle Überschneidung → nur nicht-ausgeschlossene', () => {
+      const result = calculateDiff(new Set(['a', 'b', 'c']), new Set(['b']))
+      expect(result).toContain('a')
+      expect(result).toContain('c')
+      expect(result).not.toContain('b')
+    })
+
+    it('keine Duplikate im Ergebnis (buildTrackSet dedupliziert bereits)', () => {
+      const source = new Set(['a', 'b', 'c'])
+      const exclude = new Set<string>()
+      const result = calculateDiff(source, exclude)
+      const resultSet = new Set(result)
+      expect(result).toHaveLength(resultSet.size)
     })
   })
 })

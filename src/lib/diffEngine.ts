@@ -11,11 +11,10 @@ export function buildTrackSet(trackArrays: Track[][]): Set<string> {
   return ids
 }
 
-// Story 3.2 Stub — Signatur anlegen, leerer Body
+// Story 3.2: Reine Funktion — kein React, kein State, kein API-Call
 export function calculateDiff(
   sourceTracks: Set<string>,
   excludeTracks: Set<string>
 ): string[] {
-  // TODO: Story 3.2 implementiert diese Funktion
-  throw new Error('calculateDiff: noch nicht implementiert — Story 3.2')
+  return [...sourceTracks].filter((id) => !excludeTracks.has(id))
 }
