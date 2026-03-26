@@ -38,20 +38,20 @@ export function PlaylistColumns() {
 
   if (phase === 'loading') {
     return (
-      <main className="max-w-6xl mx-auto p-6 md:p-8">
+      <div className="max-w-6xl mx-auto p-6 md:p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SkeletonColumn />
           <SkeletonColumn />
         </div>
-      </main>
+      </div>
     )
   }
 
   if (playlists.length === 0) {
     return (
-      <main className="max-w-6xl mx-auto p-6 md:p-8">
+      <div className="max-w-6xl mx-auto p-6 md:p-8">
         <EmptyState />
-      </main>
+      </div>
     )
   }
 
@@ -83,7 +83,7 @@ export function PlaylistColumns() {
 
   return (
     <>
-      <main className="max-w-6xl mx-auto p-6 md:p-8">
+      <div className="max-w-6xl mx-auto p-6 md:p-8">
         <div className="flex flex-col">
           {/* Grid zuerst im DOM (korrekte Lese- und Tab-Reihenfolge) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -141,7 +141,7 @@ export function PlaylistColumns() {
               : `${duplicates.length} Playlisten sind sowohl als Quelle als auch als Ausschluss gewählt`}
           </div>
         )}
-      </main>
+      </div>
       <ConfirmDialog
         isOpen={isDialogOpen}
         onConfirm={handleConfirm}

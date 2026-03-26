@@ -188,8 +188,47 @@ test('timedOut wird zurückgesetzt wenn progress sich ändert', () => {
 
 // --- aria-live ---
 
-test('main-Element hat aria-live="polite"', () => {
+test('Wrapper-Element hat aria-live="polite"', () => {
   setupMock(0)
   render(<CreationPhase />)
-  expect(screen.getByRole('main')).toHaveAttribute('aria-live', 'polite')
+  expect(document.querySelector('[aria-live="polite"]')).toBeInTheDocument()
+})
+
+// --- aria-current (AC1 WCAG) ---
+
+test('aktiver Schritt hat aria-current="step"', () => {
+  setupMock(0) // Schritt 1 "Tracks laden" ist active
+  render(<CreationPhase />)
+
+  const items = screen.getAllByRole('listitem')
+  expect(items[0]).toHaveAttribute('aria-current', 'step')
+  expect(items[1]).not.toHaveAttribute('aria-current')
+  expect(items[2]).not.toHaveAttribute('aria-current')
+  expect(items[3]).not.toHaveAttribute('aria-current')
+})
+
+test('aria-current wechselt zum zweiten Schritt bei progress=80', () => {
+  setupMock(80) // Schritt 2 "Differenz berechnen" ist active
+  render(<CreationPhase />)
+
+  const items = screen.getAllByRole('listitem')
+  expect(items[0]).not.toHaveAttribute('aria-current')
+  expect(items[1]).toHaveAttribute('aria-current', 'step')
+  expect(items[2]).not.toHaveAttribute('aria-current')
+  expect(items[3]).not.toHaveAttribute('aria-current')
+})
+
+// --- aria-hidden auf Ping-Animationen (AC3 WCAG) ---
+
+test('Ping-Animationselement des aktiven Schritts hat aria-hidden="true"', () => {
+  setupMock(0) // Schritt 1 active → zeigt Ping-Animation
+  const { container } = render(<CreationPhase />)
+
+  // Das Ping-Container-span muss aria-hidden="true" haben
+  const hiddenSpans = container.querySelectorAll('[aria-hidden="true"]')
+  // Mindestens eines der aria-hidden Elemente enthält die Ping-Animation
+  const hasPingSpan = Array.from(hiddenSpans).some((el) =>
+    el.querySelector('.animate-ping') !== null
+  )
+  expect(hasPingSpan).toBe(true)
 })

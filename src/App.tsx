@@ -223,17 +223,19 @@ function AppContent() {
   return (
     <>
       {showHeader && <AppHeader />}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={state.phase}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2, ease: 'easeInOut' }}
-        >
-          {phaseContent}
-        </motion.div>
-      </AnimatePresence>
+      <main>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={state.phase}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            {phaseContent}
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </>
   )
 }

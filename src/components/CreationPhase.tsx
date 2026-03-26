@@ -32,7 +32,7 @@ export function CreationPhase() {
   ]
 
   return (
-    <main
+    <div
       aria-live="polite"
       className="max-w-6xl mx-auto p-6 md:p-8 flex flex-col items-center justify-center min-h-[60vh] gap-6"
     >
@@ -68,29 +68,38 @@ export function CreationPhase() {
             </div>
           </div>
         ) : (
-          <ol className="flex flex-col gap-3">
+          <ol aria-label="Erstellungsfortschritt" className="flex flex-col gap-3">
             {steps.map((step) => (
-              <li key={step.label} className="flex items-center gap-3">
+              <li
+                key={step.label}
+                aria-current={step.status === 'active' ? 'step' : undefined}
+                className="flex items-center gap-3"
+              >
                 {step.status === 'done' && (
                   <CheckCircle2 className="h-5 w-5 text-sky-600 shrink-0" />
                 )}
                 {step.status === 'active' && (
-                  <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                  <span aria-hidden="true" className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                     <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-sky-400 opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-600" />
                   </span>
                 )}
                 {step.status === 'pending' && (
-                  <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                  <span aria-hidden="true" className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                     <span className="h-2 w-2 rounded-full bg-gray-300" />
                   </span>
                 )}
-                <span className="text-sm text-gray-700 font-medium">{step.label}</span>
+                <span className="text-sm text-gray-700 font-medium">
+                  {step.label}
+                  {step.status === 'active' && (
+                    <span className="sr-only"> (läuft gerade)</span>
+                  )}
+                </span>
               </li>
             ))}
           </ol>
         )}
       </div>
-    </main>
+    </div>
   )
 }

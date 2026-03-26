@@ -4,6 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* WCAG AA: gray-400 (#9CA3AF) hat nur ~2.5:1 Kontrast auf Weiß → auf ~4.6:1 angehoben */
+    --color-gray-400: oklch(0.55 0.015 264);
     --font-heading: var(--font-sans);
     --font-sans: 'Plus Jakarta Sans', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -159,6 +161,15 @@
 
 .button-ripple {
   animation: button-ripple 400ms ease-out forwards;
+}
+
+/* WCAG 2.4.11: In Windows Forced Colors Mode werden Tailwind ring-Utilities unterdrückt.
+   Diese Regel stellt einen sichtbaren Fokus-Indikator für custom Checkbox-Elemente sicher. */
+@media (forced-colors: active) {
+  [role="checkbox"]:focus-visible {
+    outline: 2px solid ButtonText;
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -116,4 +116,22 @@ describe('PlaylistRow', () => {
     const row = screen.getByText('Exclude Playlist').closest('div[tabindex="0"]')! as HTMLElement
     expect(row.className).toContain('border-l-rose-500')
   })
+
+  it('hat focus-visible:ring-* Klassen für sichtbaren Fokus-Ring (WCAG AC1)', () => {
+    render(
+      <PlaylistRow
+        name="Focus Playlist"
+        trackCount={3}
+        role="source"
+        selected={false}
+        onToggle={() => {}}
+      />,
+    )
+
+    const row = screen.getByRole('checkbox')
+    expect(row.className).toContain('focus-visible:ring-2')
+    expect(row.className).toContain('focus-visible:ring-sky-500')
+    expect(row.className).toContain('focus-visible:outline-none')
+    expect(row.className).toContain('rounded-lg')
+  })
 })

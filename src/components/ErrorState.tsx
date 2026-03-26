@@ -6,7 +6,7 @@ export function ErrorState() {
   const { state, dispatch } = useAppContext()
 
   return (
-    <main
+    <div
       role="alert"
       className="max-w-6xl mx-auto p-6 md:p-8 flex flex-col items-center justify-center min-h-[60vh] gap-6"
     >
@@ -41,6 +41,6 @@ export function ErrorState() {
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

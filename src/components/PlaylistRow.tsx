@@ -34,7 +34,7 @@ export function PlaylistRow({ name, trackCount, role, selected, onToggle }: Play
       role="checkbox"
       aria-checked={selected}
       aria-label={name}
-      className={`flex items-center gap-3 py-3 px-4 border-l-4 cursor-pointer transition-all duration-200 ${borderClass} ${!selected ? 'hover:bg-gray-50' : ''}`}
+      className={`flex items-center gap-3 py-3 px-4 border-l-4 cursor-pointer transition-all duration-200 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none rounded-lg ${borderClass} ${!selected ? 'hover:bg-gray-50' : ''}`}
       onClick={onToggle}
       onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onToggle() } }}
       tabIndex={0}
