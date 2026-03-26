@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { AppProvider, useAppContext } from '@/context/AppContext'
 import { LoginScreen } from '@/components/LoginScreen'
 import { SessionExpiredScreen } from '@/components/SessionExpiredScreen'
@@ -204,54 +205,37 @@ function AppContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.phase])
 
-  switch (state.phase) {
-    case 'login':
-      return <LoginScreen />
-    case 'session-expired':
-      return <SessionExpiredScreen />
-    case 'loading':
-      return (
-        <>
-          <AppHeader />
-          <PlaylistColumns />
-        </>
-      )
-    case 'selection':
-      return (
-        <>
-          <AppHeader />
-          <PlaylistColumns />
-        </>
-      )
-    case 'creating':
-      return (
-        <>
-          <AppHeader />
-          <CreationPhase />
-        </>
-      )
-    case 'success':
-      return (
-        <>
-          <AppHeader />
-          <SuccessScreen />
-        </>
-      )
-    case 'error':
-      return (
-        <>
-          <AppHeader />
-          <ErrorState />
-        </>
-      )
-    default:
-      return (
-        <>
-          <AppHeader />
-          <div>Playlisten werden geladen…</div>
-        </>
-      )
-  }
+  const phaseContent = (() => {
+    switch (state.phase) {
+      case 'login': return <LoginScreen />
+      case 'session-expired': return <SessionExpiredScreen />
+      case 'loading':
+      case 'selection': return <PlaylistColumns />
+      case 'creating': return <CreationPhase />
+      case 'success': return <SuccessScreen />
+      case 'error': return <ErrorState />
+      default: return <div>Playlisten werden geladen…</div>
+    }
+  })()
+
+  const showHeader = state.phase !== 'login' && state.phase !== 'session-expired'
+
+  return (
+    <>
+      {showHeader && <AppHeader />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={state.phase}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+        >
+          {phaseContent}
+        </motion.div>
+      </AnimatePresence>
+    </>
+  )
 }
 
 function App() {
