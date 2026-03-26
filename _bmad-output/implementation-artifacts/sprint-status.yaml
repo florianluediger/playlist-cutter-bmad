@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-25
-last_updated: 2026-03-26  # 3.2 → done
+last_updated: 2026-03-26  # 3.3 → done
 project: playlist-cutter-bmad
 project_key: NOKEY
 tracking_system: file-system
@@ -62,7 +62,7 @@ development_status:
   epic-3: in-progress
   3-1-track-loading-mit-pagination-und-parallelitaet: done
   3-2-diff-engine-und-playlist-erstellung: done
-  3-3-creationphase-mit-fortschrittsbalken: backlog
+  3-3-creationphase-mit-fortschrittsbalken: done
   3-4-successscreen-errorstate-und-post-erfolg-reset: backlog
   epic-3-retrospective: optional
 

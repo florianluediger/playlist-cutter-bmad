@@ -4,6 +4,7 @@ import { LoginScreen } from '@/components/LoginScreen'
 import { SessionExpiredScreen } from '@/components/SessionExpiredScreen'
 import { AppHeader } from '@/components/AppHeader'
 import { PlaylistColumns } from '@/components/PlaylistColumns'
+import { CreationPhase } from '@/components/CreationPhase'
 import { useAuth } from '@/hooks/useAuth'
 import { isTokenValid, loadToken } from '@/lib/auth'
 import { getUserProfile, getPlaylists, getPlaylistTracks, createPlaylist, addTracksToPlaylist } from '@/lib/spotifyApi'
@@ -224,14 +225,7 @@ function AppContent() {
       return (
         <>
           <AppHeader />
-          <main
-            aria-live="polite"
-            className="max-w-6xl mx-auto p-6 md:p-8 flex flex-col items-center justify-center min-h-[60vh] gap-4"
-          >
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-600 border-t-transparent" aria-hidden="true" />
-            <p className="text-lg font-semibold text-gray-900">{state.playlistName}</p>
-            <p className="text-sm text-gray-500">Erstelle Playlist…</p>
-          </main>
+          <CreationPhase />
         </>
       )
     case 'error':
