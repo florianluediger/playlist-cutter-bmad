@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-25
-last_updated: 2026-03-26  # 3.4 → done
+last_updated: 2026-03-26  # 4.1 done
 project: playlist-cutter-bmad
 project_key: NOKEY
 tracking_system: file-system
@@ -51,7 +51,7 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Playlist-Auswahl-Interface
-  epic-2: in-progress
+  epic-2: done
   2-1-playlisten-laden-und-zwei-spalten-layout: done
   2-2-playlist-auswahl-mit-farbkodierung-und-animationen: done
   2-3-toolbar-mit-playlist-name-live-summary-und-erstellen-button: done
@@ -59,7 +59,7 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Diff-Berechnung & Playlist-Erstellung
-  epic-3: in-progress
+  epic-3: done
   3-1-track-loading-mit-pagination-und-parallelitaet: done
   3-2-diff-engine-und-playlist-erstellung: done
   3-3-creationphase-mit-fortschrittsbalken: done
@@ -67,8 +67,8 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Deployment & Produktionsreife
-  epic-4: backlog
-  4-1-github-actions-ci-cd-pipeline-und-github-pages-deployment: backlog
+  epic-4: in-progress
+  4-1-github-actions-ci-cd-pipeline-und-github-pages-deployment: done
   4-2-framer-motion-phasen-uebergaenge-und-mobile-layout-finalisieren: backlog
   4-3-accessibility-audit-und-wcag-aa-compliance: backlog
   epic-4-retrospective: optional

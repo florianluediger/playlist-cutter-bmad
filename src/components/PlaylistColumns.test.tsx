@@ -23,6 +23,9 @@ const baseState: AppState = {
   error: null,
   progress: 0,
   userName: null,
+  userId: null,
+  createdPlaylistUrl: null,
+  createdTrackCount: 0,
 }
 
 function renderWithState(stateOverrides: Partial<AppState>) {
