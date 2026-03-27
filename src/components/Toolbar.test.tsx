@@ -9,7 +9,7 @@ beforeEach(() => {
 const defaultProps = {
   value: '',
   onChange: vi.fn(),
-  summary: '0 Quellen · 0 Ausschlüsse · ~0 Tracks',
+  summary: '0 Quellen · 0 Ausschlüsse',
   onSubmit: vi.fn(),
   disabled: true,
 }
@@ -37,20 +37,8 @@ test('onChange wird aufgerufen wenn Input geändert wird', async () => {
 })
 
 test('Summary-Text wird angezeigt', () => {
-  render(<Toolbar {...defaultProps} summary="2 Quellen · 0 Ausschlüsse · ~30 Tracks" />)
-  expect(screen.getByText('2 Quellen · 0 Ausschlüsse · ~30 Tracks')).toBeInTheDocument()
-})
-
-test('0-Tracks-Warnung wird angezeigt wenn summary entsprechend gesetzt', () => {
-  render(
-    <Toolbar
-      {...defaultProps}
-      summary="0 Tracks — alle gewählten Quell-Playlists sind leer"
-    />,
-  )
-  expect(
-    screen.getByText('0 Tracks — alle gewählten Quell-Playlists sind leer'),
-  ).toBeInTheDocument()
+  render(<Toolbar {...defaultProps} summary="2 Quellen · 0 Ausschlüsse" />)
+  expect(screen.getByText('2 Quellen · 0 Ausschlüsse')).toBeInTheDocument()
 })
 
 test('onSubmit wird aufgerufen wenn Button geklickt und nicht disabled', async () => {

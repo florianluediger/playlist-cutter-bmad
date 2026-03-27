@@ -26,17 +26,15 @@ interface ConfirmDialogProps {
   playlistName: string
   sourceCount: number
   excludeCount: number
-  estimatedTrackCount: number
 }
 
 interface SummaryBodyProps {
   playlistName: string
   sourceCount: number
   excludeCount: number
-  estimatedTrackCount: number
 }
 
-function SummaryBody({ playlistName, sourceCount, excludeCount, estimatedTrackCount }: SummaryBodyProps) {
+function SummaryBody({ playlistName, sourceCount, excludeCount }: SummaryBodyProps) {
   return (
     <div className="py-4 space-y-3">
       <p className="font-semibold text-base text-gray-900">{playlistName}</p>
@@ -49,14 +47,7 @@ function SummaryBody({ playlistName, sourceCount, excludeCount, estimatedTrackCo
           <dt>Ausschlüsse</dt>
           <dd>{excludeCount} {excludeCount === 1 ? 'Playlist' : 'Playlisten'}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt>Geschätzte Tracks</dt>
-          <dd>~{estimatedTrackCount} Tracks</dd>
-        </div>
       </dl>
-      <p className="text-xs text-gray-400">
-        Die exakte Track-Anzahl wird nach der Diff-Berechnung ermittelt.
-      </p>
     </div>
   )
 }
@@ -68,7 +59,6 @@ export function ConfirmDialog({
   playlistName,
   sourceCount,
   excludeCount,
-  estimatedTrackCount,
 }: ConfirmDialogProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -86,7 +76,6 @@ export function ConfirmDialog({
             playlistName={playlistName}
             sourceCount={sourceCount}
             excludeCount={excludeCount}
-            estimatedTrackCount={estimatedTrackCount}
           />
           <DialogFooter>
             <Button variant="outline" onClick={onCancel}>Abbrechen</Button>
@@ -114,7 +103,6 @@ export function ConfirmDialog({
             playlistName={playlistName}
             sourceCount={sourceCount}
             excludeCount={excludeCount}
-            estimatedTrackCount={estimatedTrackCount}
           />
           <DrawerFooter className="px-0 gap-2">
             <Button onClick={onConfirm} className="bg-sky-600 hover:bg-sky-700 text-white w-full">

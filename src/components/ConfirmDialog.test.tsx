@@ -20,7 +20,6 @@ const defaultProps = {
   playlistName: 'Meine Playlist',
   sourceCount: 3,
   excludeCount: 1,
-  estimatedTrackCount: 42,
 }
 
 test('Dialog zeigt Playlist-Namen', () => {
@@ -38,10 +37,6 @@ test('Dialog zeigt Ausschlüsse-Anzahl', () => {
   expect(screen.getByText(/1 Playlist/)).toBeInTheDocument()
 })
 
-test('Dialog zeigt geschätzte Tracks', () => {
-  render(<ConfirmDialog {...defaultProps} />)
-  expect(screen.getByText(/~42 Tracks/)).toBeInTheDocument()
-})
 
 test('"Erstellen"-Button ruft onConfirm auf', async () => {
   const onConfirm = vi.fn()
@@ -67,6 +62,5 @@ test('Mobile: Drawer zeigt Zusammenfassung korrekt', () => {
   render(<ConfirmDialog {...defaultProps} />)
   expect(screen.getByText('Meine Playlist')).toBeInTheDocument()
   expect(screen.getByText(/3 Playlisten/)).toBeInTheDocument()
-  expect(screen.getByText(/~42 Tracks/)).toBeInTheDocument()
 })
 

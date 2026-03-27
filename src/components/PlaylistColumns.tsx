@@ -59,14 +59,7 @@ export function PlaylistColumns() {
     (p) => selectedSources.includes(p.id) && selectedExcludes.includes(p.id),
   )
 
-  const estimatedTracks = playlists
-    .filter((p) => selectedSources.includes(p.id))
-    .reduce((sum, p) => sum + p.trackCount, 0)
-
-  const summaryText =
-    estimatedTracks === 0 && selectedSources.length > 0
-      ? '0 Tracks — alle gewählten Quell-Playlists sind leer'
-      : `${selectedSources.length} Quellen · ${selectedExcludes.length} Ausschlüsse · ~${estimatedTracks} Tracks`
+  const summaryText = `${selectedSources.length} Quellen · ${selectedExcludes.length} Ausschlüsse`
 
   const isDisabled = selectedSources.length === 0 || playlistName.trim() === ''
 
@@ -149,7 +142,6 @@ export function PlaylistColumns() {
         playlistName={playlistName}
         sourceCount={selectedSources.length}
         excludeCount={selectedExcludes.length}
-        estimatedTrackCount={estimatedTracks}
       />
     </>
   )
