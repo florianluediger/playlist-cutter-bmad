@@ -71,7 +71,7 @@ export async function getPlaylists(token: string): Promise<Playlist[]> {
     if (data.next) {
       try {
         const nextUrl = new URL(data.next)
-        path = nextUrl.pathname + nextUrl.search
+        path = nextUrl.pathname.replace(/^\/v1/, '') + nextUrl.search
       } catch {
         throw new Error('Spotify API Fehler: ungültige Antwort')
       }
@@ -114,7 +114,7 @@ export async function getPlaylistTracks(token: string, playlistId: string): Prom
     if (data.next) {
       try {
         const nextUrl = new URL(data.next)
-        path = nextUrl.pathname + nextUrl.search
+        path = nextUrl.pathname.replace(/^\/v1/, '') + nextUrl.search
       } catch {
         throw new Error('Spotify API Fehler: ungültige Antwort')
       }
