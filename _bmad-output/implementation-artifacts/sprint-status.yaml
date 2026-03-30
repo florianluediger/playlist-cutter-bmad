@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-25
-last_updated: 2026-03-26  # 4.3 done
+last_updated: 2026-03-30  # Epic 4 abgeschlossen
 project: playlist-cutter-bmad
 project_key: NOKEY
 tracking_system: file-system
@@ -67,8 +67,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Deployment & Produktionsreife
-  epic-4: in-progress
+  epic-4: done
   4-1-github-actions-ci-cd-pipeline-und-github-pages-deployment: done
   4-2-framer-motion-phasen-uebergaenge-und-mobile-layout-finalisieren: done
   4-3-accessibility-audit-und-wcag-aa-compliance: done
   epic-4-retrospective: optional
+
+  # Zusätzliche Features (Post-Sprint)
+  tech-spec-gegenseitige-playlist-deaktivierung: done
