@@ -45,7 +45,7 @@ export function PlaylistRow({ name, trackCount, role, selected, onToggle, disabl
       onKeyDown={(e) => { if (disabled) return; if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onToggle() } }}
       tabIndex={disabled ? -1 : 0}
     >
-      <span aria-hidden="true" className={isAnimating ? 'checkbox-pop' : undefined}>
+      <span aria-hidden="true" className={`pointer-events-none${isAnimating ? ' checkbox-pop' : ''}`}>
         <Checkbox checked={selected} tabIndex={-1} />
       </span>
       <span className="flex-1 text-sm font-medium text-gray-900 truncate">{name}</span>
