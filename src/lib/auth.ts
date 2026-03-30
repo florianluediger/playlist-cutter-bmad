@@ -77,7 +77,8 @@ export function loadToken(): string | null {
   const token = localStorage.getItem(TOKEN_KEY)
   const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY)
   if (!token || !expiry) return null
-  if (Date.now() > parseInt(expiry, 10)) {
+  const expiryMs = parseInt(expiry, 10)
+  if (isNaN(expiryMs) || Date.now() > expiryMs) {
     clearToken()
     return null
   }

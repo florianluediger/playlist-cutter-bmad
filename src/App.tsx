@@ -9,7 +9,7 @@ import { CreationPhase } from '@/components/CreationPhase'
 import { SuccessScreen } from '@/components/SuccessScreen'
 import { ErrorState } from '@/components/ErrorState'
 import { useAuth } from '@/hooks/useAuth'
-import { isTokenValid, loadToken } from '@/lib/auth'
+import { loadToken } from '@/lib/auth'
 import { getUserProfile, getPlaylists, getPlaylistTracks, createPlaylist, addTracksToPlaylist } from '@/lib/spotifyApi'
 import { runWithConcurrency } from '@/lib/concurrency'
 import { buildTrackSet, calculateDiff } from '@/lib/diffEngine'
@@ -26,7 +26,7 @@ function AppContent() {
 
     // 1. Session-Persistenz: gültiger Token → direkt zu loading
     const token = loadToken()
-    if (token && isTokenValid()) {
+    if (token) {
       let cancelled = false
       getUserProfile(token)
         .then(({ displayName, userId }) => {
@@ -43,6 +43,7 @@ function AppContent() {
             handleAuthError()
           } else {
             dispatch({ type: 'SET_ERROR', payload: 'Verbindungsproblem — bitte Seite neu laden.' })
+            dispatch({ type: 'SET_PHASE', payload: 'error' })
           }
         })
       return () => {
@@ -97,6 +98,7 @@ function AppContent() {
 
     return () => {
       cancelled = true
+      playlistsLoaded.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.phase])
