@@ -12,8 +12,12 @@ export function AppHeader() {
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
         <span className="text-xl font-bold text-sky-600">Playlist Cutter</span>
         <div className="flex gap-3 items-center">
-          <span className="text-sm text-gray-500">{state.userName ?? 'Nutzer'}</span>
-          <span className="text-gray-300">|</span>
+          {state.userName && (
+            <>
+              <span className="text-sm text-gray-500">{state.userName}</span>
+              <span className="text-gray-300">|</span>
+            </>
+          )}
           <Button
             variant="ghost"
             size="sm"
