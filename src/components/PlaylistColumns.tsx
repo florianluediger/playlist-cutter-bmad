@@ -5,7 +5,6 @@ import { PlaylistRow } from '@/components/PlaylistRow'
 import { EmptyState } from '@/components/EmptyState'
 import { Toolbar } from '@/components/Toolbar'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { AlertTriangle } from 'lucide-react'
 
 const SKELETON_COUNT = 6
 
@@ -36,6 +35,8 @@ export function PlaylistColumns() {
   const { state, dispatch } = useAppContext()
   const { phase, playlists, selectedSources, selectedExcludes, playlistName } = state
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
   if (phase === 'loading') {
     return (
       <div className="max-w-6xl mx-auto p-6 md:p-8">
@@ -55,15 +56,9 @@ export function PlaylistColumns() {
     )
   }
 
-  const duplicates = playlists.filter(
-    (p) => selectedSources.includes(p.id) && selectedExcludes.includes(p.id),
-  )
-
   const summaryText = `${selectedSources.length} Quellen · ${selectedExcludes.length} Ausschlüsse`
 
   const isDisabled = selectedSources.length === 0 || playlistName.trim() === ''
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   function handleSubmit() {
     setIsDialogOpen(true)
@@ -91,6 +86,7 @@ export function PlaylistColumns() {
                     role="source"
                     selected={selectedSources.includes(playlist.id)}
                     onToggle={() => dispatch({ type: 'TOGGLE_SOURCE', payload: playlist.id })}
+                    disabled={selectedExcludes.includes(playlist.id)}
                   />
                 ))}
               </div>
@@ -106,6 +102,7 @@ export function PlaylistColumns() {
                     role="exclude"
                     selected={selectedExcludes.includes(playlist.id)}
                     onToggle={() => dispatch({ type: 'TOGGLE_EXCLUDE', payload: playlist.id })}
+                    disabled={selectedSources.includes(playlist.id)}
                   />
                 ))}
               </div>
@@ -122,18 +119,6 @@ export function PlaylistColumns() {
             />
           </div>
         </div>
-        {duplicates.length > 0 && (
-          <div
-            role="alert"
-            aria-atomic="true"
-            className="mt-4 flex items-center gap-2 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-          >
-            <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0" />
-            {duplicates.length === 1
-              ? 'Diese Playlist ist sowohl als Quelle als auch als Ausschluss gewählt'
-              : `${duplicates.length} Playlisten sind sowohl als Quelle als auch als Ausschluss gewählt`}
-          </div>
-        )}
       </div>
       <ConfirmDialog
         isOpen={isDialogOpen}

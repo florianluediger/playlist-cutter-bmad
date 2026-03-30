@@ -37,74 +37,42 @@ function renderWithState(stateOverrides: Partial<AppState>) {
   )
 }
 
-describe('PlaylistColumns — Duplikat-Warnung', () => {
-  it('zeigt keine Warnung wenn kein Duplikat', () => {
+describe('PlaylistColumns — gegenseitige Deaktivierung', () => {
+  it('Playlist in Exclude-Spalte ist aria-disabled wenn sie als Source gewählt ist', () => {
     renderWithState({
       selectedSources: ['p1'],
+      selectedExcludes: [],
+    })
+
+    // Alle Checkboxen mit Namen "Playlist Alpha" holen (eine je Spalte)
+    const rows = screen.getAllByRole('checkbox', { name: 'Playlist Alpha' })
+    // Source-Spalte: nicht disabled; Exclude-Spalte: disabled
+    const excludeRow = rows[1]
+    expect(excludeRow).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('Playlist in Source-Spalte ist aria-disabled wenn sie als Exclude gewählt ist', () => {
+    renderWithState({
+      selectedSources: [],
       selectedExcludes: ['p2'],
     })
 
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    const rows = screen.getAllByRole('checkbox', { name: 'Playlist Beta' })
+    // Source-Spalte: disabled; Exclude-Spalte: nicht disabled
+    const sourceRow = rows[0]
+    expect(sourceRow).toHaveAttribute('aria-disabled', 'true')
   })
 
-  it('zeigt Warnung wenn eine Playlist sowohl Quelle als auch Ausschluss ist (Einzahl)', () => {
+  it('alle Rows sind nicht disabled wenn keine Selektion vorhanden ist', () => {
     renderWithState({
-      selectedSources: ['p1'],
-      selectedExcludes: ['p1'],
+      selectedSources: [],
+      selectedExcludes: [],
     })
 
-    const alert = screen.getByRole('alert')
-    expect(alert).toBeInTheDocument()
-    expect(alert.textContent).toContain('Diese Playlist ist sowohl als Quelle als auch als Ausschluss gewählt')
-  })
-
-  it('zeigt Warnung mit Anzahl wenn mehrere Playlisten dupliziert sind (Mehrzahl)', () => {
-    renderWithState({
-      selectedSources: ['p1', 'p2'],
-      selectedExcludes: ['p1', 'p2'],
+    const rows = screen.getAllByRole('checkbox')
+    rows.forEach((row) => {
+      expect(row).toHaveAttribute('aria-disabled', 'false')
     })
-
-    const alert = screen.getByRole('alert')
-    expect(alert).toBeInTheDocument()
-    expect(alert.textContent).toContain('2 Playlisten')
-    expect(alert.textContent).toContain('sowohl als Quelle als auch als Ausschluss gewählt')
   })
 
-  it('versteckt Warnung wenn Duplizierung aufgehoben wird', () => {
-    const { rerender } = render(
-      <AppContext.Provider
-        value={{
-          state: { ...baseState, selectedSources: ['p1'], selectedExcludes: ['p1'] },
-          dispatch: vi.fn(),
-        }}
-      >
-        <PlaylistColumns />
-      </AppContext.Provider>,
-    )
-
-    expect(screen.getByRole('alert')).toBeInTheDocument()
-
-    rerender(
-      <AppContext.Provider
-        value={{
-          state: { ...baseState, selectedSources: ['p1'], selectedExcludes: [] },
-          dispatch: vi.fn(),
-        }}
-      >
-        <PlaylistColumns />
-      </AppContext.Provider>,
-    )
-
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  })
-
-  it('zeigt keine Warnung wenn selectedIds nicht in playlists vorhanden sind', () => {
-    renderWithState({
-      playlists: [],
-      selectedSources: ['x'],
-      selectedExcludes: ['x'],
-    })
-
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  })
 })

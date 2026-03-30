@@ -27,6 +27,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'TOGGLE_SOURCE': {
       const id = action.payload
+      if (state.selectedExcludes.includes(id)) return state
       const selected = state.selectedSources.includes(id)
         ? state.selectedSources.filter(s => s !== id)
         : [...state.selectedSources, id]
@@ -35,6 +36,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'TOGGLE_EXCLUDE': {
       const id = action.payload
+      if (state.selectedSources.includes(id)) return state
       const selected = state.selectedExcludes.includes(id)
         ? state.selectedExcludes.filter(s => s !== id)
         : [...state.selectedExcludes, id]

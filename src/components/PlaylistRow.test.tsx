@@ -134,4 +134,92 @@ describe('PlaylistRow', () => {
     expect(row.className).toContain('focus-visible:outline-none')
     expect(row.className).toContain('rounded-lg')
   })
+
+  it('disabled=true: aria-disabled="true" ist gesetzt', () => {
+    render(
+      <PlaylistRow
+        name="Disabled Playlist"
+        trackCount={5}
+        role="source"
+        selected={false}
+        onToggle={() => {}}
+        disabled={true}
+      />,
+    )
+
+    expect(screen.getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('disabled=true: onToggle wird bei Klick NICHT aufgerufen', async () => {
+    const user = userEvent.setup()
+    const onToggle = vi.fn()
+
+    render(
+      <PlaylistRow
+        name="Disabled Klick"
+        trackCount={5}
+        role="source"
+        selected={false}
+        onToggle={onToggle}
+        disabled={true}
+      />,
+    )
+
+    await user.click(screen.getByText('Disabled Klick'))
+    expect(onToggle).not.toHaveBeenCalled()
+  })
+
+  it('disabled=true: onToggle wird bei Space-Taste NICHT aufgerufen', async () => {
+    const user = userEvent.setup()
+    const onToggle = vi.fn()
+
+    render(
+      <PlaylistRow
+        name="Disabled Space"
+        trackCount={5}
+        role="source"
+        selected={false}
+        onToggle={onToggle}
+        disabled={true}
+      />,
+    )
+
+    const row = screen.getByRole('checkbox')
+    row.focus()
+    expect(document.activeElement).toBe(row)
+    await user.keyboard(' ')
+    expect(onToggle).not.toHaveBeenCalled()
+  })
+
+  it('disabled=true: tabIndex ist -1', () => {
+    render(
+      <PlaylistRow
+        name="Disabled TabIndex"
+        trackCount={5}
+        role="source"
+        selected={false}
+        onToggle={() => {}}
+        disabled={true}
+      />,
+    )
+
+    expect(screen.getByRole('checkbox')).toHaveAttribute('tabindex', '-1')
+  })
+
+  it('disabled=true: Container hat opacity-50 und cursor-not-allowed Klassen', () => {
+    render(
+      <PlaylistRow
+        name="Disabled Style"
+        trackCount={5}
+        role="source"
+        selected={false}
+        onToggle={() => {}}
+        disabled={true}
+      />,
+    )
+
+    const row = screen.getByRole('checkbox')
+    expect(row.className).toContain('opacity-50')
+    expect(row.className).toContain('cursor-not-allowed')
+  })
 })

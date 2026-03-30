@@ -38,6 +38,13 @@ describe('appReducer', () => {
       state = appReducer(state, { type: 'TOGGLE_SOURCE', payload: 'pl-2' })
       expect(state.selectedSources).toEqual(['pl-1', 'pl-2'])
     })
+
+    it('ignoriert TOGGLE_SOURCE wenn ID bereits in selectedExcludes ist', () => {
+      const withExcluded: AppState = { ...initialState, selectedExcludes: ['pl-1'] }
+      const state = appReducer(withExcluded, { type: 'TOGGLE_SOURCE', payload: 'pl-1' })
+      expect(state.selectedSources).not.toContain('pl-1')
+      expect(state.selectedExcludes).toContain('pl-1')
+    })
   })
 
   describe('TOGGLE_EXCLUDE', () => {
@@ -50,6 +57,13 @@ describe('appReducer', () => {
       const withExcluded: AppState = { ...initialState, selectedExcludes: ['pl-3'] }
       const state = appReducer(withExcluded, { type: 'TOGGLE_EXCLUDE', payload: 'pl-3' })
       expect(state.selectedExcludes).not.toContain('pl-3')
+    })
+
+    it('ignoriert TOGGLE_EXCLUDE wenn ID bereits in selectedSources ist', () => {
+      const withSource: AppState = { ...initialState, selectedSources: ['pl-1'] }
+      const state = appReducer(withSource, { type: 'TOGGLE_EXCLUDE', payload: 'pl-1' })
+      expect(state.selectedExcludes).not.toContain('pl-1')
+      expect(state.selectedSources).toContain('pl-1')
     })
   })
 
