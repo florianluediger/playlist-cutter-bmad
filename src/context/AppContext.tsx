@@ -12,7 +12,7 @@ interface AppContextValue {
 export const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, undefined, (_: undefined) => {
+  const [state, dispatch] = useReducer(appReducer, undefined, (_: undefined): AppState => {
     let hasToken = false
     try {
       hasToken = isTokenValid()
