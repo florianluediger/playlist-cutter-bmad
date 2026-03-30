@@ -56,7 +56,9 @@ export function PlaylistColumns() {
     )
   }
 
-  const summaryText = `${selectedSources.length} Quellen · ${selectedExcludes.length} Ausschlüsse`
+  const sourceCount = selectedSources.length
+  const excludeCount = selectedExcludes.length
+  const summaryText = `${sourceCount} ${sourceCount === 1 ? 'Quelle' : 'Quellen'} · ${excludeCount} ${excludeCount === 1 ? 'Ausschluss' : 'Ausschlüsse'}`
 
   const isDisabled = selectedSources.length === 0 || playlistName.trim() === ''
 
